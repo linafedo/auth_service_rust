@@ -11,9 +11,9 @@ diesel::table! {
 
 diesel::table! {
     users (user_id) {
-        user_id -> Int4,
         password -> Varchar,
-        user_login -> Varchar,
+        user_login -> Text,
+        user_id -> Uuid,
     }
 }
 
