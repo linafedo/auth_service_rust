@@ -8,8 +8,8 @@ use uuid::Uuid;
 #[derive(Queryable ,PartialEq, Debug)]
 pub struct User {
     pub password: String,
-    pub user_login: String,
-    pub user_id: Uuid,
+    pub login: String,
+    pub id: Uuid,
 }
 
 #[derive(Queryable)]

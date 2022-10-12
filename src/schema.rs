@@ -10,10 +10,10 @@ diesel::table! {
 }
 
 diesel::table! {
-    users (user_id) {
+    users (id) {
         password -> Varchar,
-        user_login -> Text,
-        user_id -> Uuid,
+        login -> Text,
+        id -> Uuid,
     }
 }
 
