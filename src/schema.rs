@@ -2,10 +2,10 @@
 
 diesel::table! {
     tokens (token) {
-        token -> Varchar,
+        token -> Text,
         user_id -> Uuid,
-        created_at -> Timestamp,
-        last_used_at -> Timestamp,
+        created_at -> Nullable<Timestamp>,
+        last_used_at -> Nullable<Timestamp>,
     }
 }
 

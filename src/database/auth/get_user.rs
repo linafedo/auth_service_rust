@@ -5,7 +5,6 @@ use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use diesel::{QueryDsl, ExpressionMethods, RunQueryDsl};
 use diesel::prelude::*;
 
-
 pub fn with_token(db: &mut diesel::PgConnection, with_token: &str) -> GetUser {
      match users
          .left_join(tokens.on(user_id.eq(id)))

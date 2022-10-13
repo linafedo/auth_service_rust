@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use crate::schema::tokens::dsl::*;
 use diesel::query_dsl::LoadQuery;
 use diesel::sql_types;
 use uuid::Uuid;
@@ -10,12 +11,6 @@ pub struct User {
     pub password: String,
     pub login: String,
     pub id: Uuid,
-}
-
-#[derive(Queryable)]
-pub struct NewToken<'a>  {
-    id: &'a Uuid,
-    token: &'a str
 }
 
 // Status states
