@@ -1,9 +1,22 @@
-use crate::database::auth::models::{GetUser, User};
 use crate::schema::users::dsl::*;
 use crate::schema::tokens::dsl::*;
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use diesel::{QueryDsl, ExpressionMethods, RunQueryDsl};
 use diesel::prelude::*;
+use uuid::Uuid;
+
+#[derive(Queryable ,PartialEq, Debug)]
+pub struct User {
+     pub password: String,
+     pub login: String,
+     pub id: Uuid,
+}
+
+pub enum GetUser {
+     Some(User),
+     None,
+     Error
+}
 
 pub fn with_token(db: &mut diesel::PgConnection, with_token: &str) -> GetUser {
      match users
@@ -16,7 +29,6 @@ pub fn with_token(db: &mut diesel::PgConnection, with_token: &str) -> GetUser {
           Err(diesel::result::Error::NotFound) => GetUser::None,
           _ => GetUser::Error,
      }
-
 }
 
 pub fn with_credentials(db: &mut diesel::PgConnection, user_login: &str, with_password: &str) -> GetUser {
@@ -36,7 +48,6 @@ pub fn with_credentials(db: &mut diesel::PgConnection, user_login: &str, with_pa
                } else {
                     GetUser::None
                }
-
           }
           Err(diesel::result::Error::NotFound) => GetUser::None,
           _ => GetUser::Error,

@@ -1,4 +1,4 @@
-use crate::database::auth::models::{CreateToken, User};
+use crate::database::auth::get_user::User;
 use crate::schema::tokens::dsl::*;
 use crate::schema::tokens;
 use diesel::{RunQueryDsl, Insertable};
@@ -10,6 +10,11 @@ use uuid::Uuid;
 pub struct NewToken<'a>  {
     pub token: &'a str,
     pub user_id: &'a Uuid
+}
+
+pub enum CreateToken {
+    Ok(String),
+    Error
 }
 
 fn create_token(db: &mut diesel::PgConnection, user: &User) -> CreateToken {
