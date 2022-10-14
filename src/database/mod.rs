@@ -1,4 +1,6 @@
-mod auth;
+pub mod auth;
+use rocket_contrib::database;
+use rocket_contrib::databases::diesel;
 
 
 
