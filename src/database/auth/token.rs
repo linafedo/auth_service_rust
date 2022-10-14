@@ -17,7 +17,7 @@ pub enum CreateToken {
     Error
 }
 
-fn create_token(db: &mut diesel::PgConnection, user: &User) -> CreateToken {
+pub fn create_token(db: &mut diesel::PgConnection, user: &User) -> CreateToken {
     let mut token_bytes = [0u8, 32];
     rand_core::OsRng.fill_bytes(&mut token_bytes);
     let token_string = base64::encode(token_bytes);

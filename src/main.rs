@@ -1,6 +1,7 @@
 mod config;
-mod database;
+pub mod database;
 mod schema;
+mod handlers;
 
 fn main() {
     println!("Hello, world!");

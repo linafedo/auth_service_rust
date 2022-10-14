@@ -23,7 +23,7 @@ pub enum CreateUser {
 
 const PASSWORD_LENGHT: usize = 8;
 
-fn create_user(db: &mut PgConnection, user_login: &str, user_password: &str) -> CreateUser {
+pub fn create_user(db: &mut PgConnection, user_login: &str, user_password: &str) -> CreateUser {
     if user_password.len() < PASSWORD_LENGHT { return CreateUser::WeakPassword }
 
     let salt = SaltString::generate(OsRng);
