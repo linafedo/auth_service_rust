@@ -5,8 +5,8 @@ use diesel::{RunQueryDsl, Insertable};
 use rand_core::RngCore;
 use uuid::Uuid;
 
-#[derive(Insertable)]
-#[diesel(table_name = tokens)]
+#[derive(Insertable, PartialEq, Debug)]
+#[table_name = "tokens"]
 pub struct NewToken<'a>  {
     pub token: &'a str,
     pub user_id: &'a Uuid
@@ -17,7 +17,7 @@ pub enum CreateToken {
     Error
 }
 
-pub fn create_token(db: &mut diesel::PgConnection, user: &User) -> CreateToken {
+pub fn create_token(db: &diesel::PgConnection, user: &User) -> CreateToken {
     let mut token_bytes = [0u8, 32];
     rand_core::OsRng.fill_bytes(&mut token_bytes);
     let token_string = base64::encode(token_bytes);

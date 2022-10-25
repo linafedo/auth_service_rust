@@ -1,5 +1,6 @@
 use crate::database::auth::create_user;
 use crate::database::auth::create_user::CreateUser;
+use crate::database::DatabaseConnection;
 
 pub enum RegistrationError {
     UserExist,
@@ -15,9 +16,9 @@ pub enum RegistrationResult {
 pub fn registration(
     login: &str,
     password: &str,
-    db: &mut diesel::PgConnection
+    db: DatabaseConnection
 ) -> RegistrationResult {
-    match create_user::create_user(db, login, password) {
+    match create_user::create_user(&*db, login, password) {
         CreateUser::Ok => RegistrationResult::Success,
         CreateUser::WeakPassword => RegistrationResult::Failed(RegistrationError::WeakPassword),
         CreateUser::AlreadyExist => RegistrationResult::Failed(RegistrationError::UserExist),

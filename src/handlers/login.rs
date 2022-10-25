@@ -2,6 +2,7 @@ use crate::database::auth::get_user;
 use crate::database;
 use crate::database::auth::get_user::GetUser;
 use crate::database::auth::token::CreateToken;
+use crate::database::DatabaseConnection;
 
 pub enum LoginError {
     NotFound,
@@ -13,10 +14,10 @@ pub enum LoginResult {
     Failed(LoginError)
 }
 
-pub fn login(login: &str, password: &str, db: &mut diesel::PgConnection) -> LoginResult {
-    match get_user::with_credentials(db, login, password) {
+pub fn login(login: &str, password: &str, db: DatabaseConnection) -> LoginResult {
+    match get_user::with_credentials(&*db, login, password) {
         GetUser::Some(user) => {
-            match database::auth::token::create_token(db, &user) {
+            match database::auth::token::create_token(&*db, &user) {
                 CreateToken::Ok(token) => LoginResult::Success(token),
                 CreateToken::Error => LoginResult::Failed(LoginError::Other),
             }
