@@ -1,17 +1,16 @@
 use rocket::*;
-use rocket_contrib::json::{Json, JsonValue};
+use rocket_contrib::json::Json;
 
 use crate::handlers::{login, register};
 use crate::handlers::login::{LoginResult, LoginError};
 use crate::handlers::register::{RegistrationResult, RegistrationError};
 
-use crate::routes::routes_object::error_response::{
+use crate::routes::model::error_response::{
     ERROR_USER_NOT_FOUND, ERROR_UNKNOWN, ERROR_WRONG_REQUEST, ERROR_WEAK_PASSWORD, ERROR_ALREADY_REGISTERED
 };
-use crate::routes::routes_object::auth_request::AuthRequest;
-use crate::routes::routes_object::login_response::LoginResponse;
-use crate::routes::routes_object::error_response::ErrorResponse;
-use crate::routes;
+use crate::routes::model::auth_request::AuthRequest;
+use crate::routes::model::login_response::LoginResponse;
+use crate::routes::model::error_response::ErrorResponse;
 
 use crate::database::DatabaseConnection;
 

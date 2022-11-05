@@ -1,6 +1,6 @@
-use dotenv::{dotenv, var};
-use rocket::config::{ConfigBuilder, Environment, Value};
-use rocket::{config, Config};
+use dotenv::{dotenv};
+use rocket::config::{Environment, Value};
+use rocket::Config;
 use std::collections::HashMap;
 use std::env;
 

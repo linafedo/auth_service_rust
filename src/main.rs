@@ -15,5 +15,7 @@ pub mod handlers;
 mod routes;
 
 fn main() {
+    rocket::custom(config::from_env())
+        .launch();
     println!("Hello, world!");
 }

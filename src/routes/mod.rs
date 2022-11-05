@@ -1,2 +1,2 @@
-pub mod routes_object;
+pub mod model;
 pub mod auth_route;
