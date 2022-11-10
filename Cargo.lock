@@ -33,6 +33,7 @@ dependencies = [
  "diesel_migrations",
  "dotenv",
  "dotenvy",
+ "envy",
  "rand_core",
  "rocket",
  "rocket_contrib",
@@ -233,6 +234,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed9155c8f4dc55c7470ae9da3f63c6785245093b3f6aeb0f5bf2e968efbba314"
 dependencies = [
  "dirs",
+]
+
+[[package]]
+name = "envy"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f47e0157f2cb54f5ae1bd371b30a2ae4311e1c028f575cd4e81de7353215965"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

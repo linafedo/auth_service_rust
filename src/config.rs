@@ -1,31 +1,43 @@
-use dotenv::{dotenv};
 use rocket::config::{Environment, Value};
 use rocket::Config;
 use std::collections::HashMap;
-use std::env;
+use serde_json::ser::State;
+use crate::env_var;
 
-pub fn from_env() -> Config {
-    dotenv().ok();
-    let environment = Environment::active().expect("No environment found");
-
-    let port = env::var("PORT")
-        .unwrap_or_else(|_| "8000".to_string())
-        .parse::<u16>()
-        .expect("PORT environment variable should parse to an integer");
+pub fn from_env() -> Result<Config, String> {
+    let Ok(environment) = Environment::active() else {
+        return Err(String::from(ENV_NOT_FOUND))
+    };
 
     let mut database_config = HashMap::new();
     let mut databases = HashMap::new();
 
-    let database_url =
-        env::var("DATABASE_URL").expect("No DATABASE_URL environment variable found");
+    let Some(config) = env_var::get_env_config() else {
+        return Err(String::from(ENV_CONFIG_ERROR))
+    };
 
-    database_config.insert("url", Value::from(database_url));
-    databases.insert("diesel_postgres_pool", Value::from(database_config));
+    // todo зачем передавать database?
+    database_config.insert(URL_KEY, Value::from(config.database_url));
+    databases.insert(POSTGRES_POOL_KEY, Value::from(database_config));
 
-    Config::build(environment)
+    let config = Config::build(environment)
         .environment(environment)
-        .port(port)
-        .extra("databases", databases)
-        .finalize()
-        .unwrap()
+        .port(config.port)
+        .extra(DB_KEY, databases)
+        .finalize();
+
+    return match config {
+        Ok(config) => Ok(config),
+        Err(_) => Err(String::from(ENV_CONFIG_ERROR))
+    }
 }
+
+// Errors
+const ENV_NOT_FOUND: &str = "No environment found";
+const ENV_CONFIG_ERROR: &str = "Failed to get env config";
+const ENV_BUILD_CONFIG_ERROR: &str = "Build config error";
+
+// Keys
+const URL_KEY: &str = "url";
+const POSTGRES_POOL_KEY: &str = "diesel_postgres_pool";
+const DB_KEY: &str = "databases";

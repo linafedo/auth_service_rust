@@ -1,4 +1,5 @@
 #![feature(decl_macro)]
+#![feature(let_else)]
 #[macro_use]
 extern crate diesel;
 #[macro_use]
@@ -13,9 +14,17 @@ pub mod database;
 mod schema;
 pub mod handlers;
 mod routes;
+mod env_var;
 
 fn main() {
-    rocket::custom(config::from_env())
-        .launch();
-    println!("Hello, world!");
+    match config::from_env() {
+        Ok(config) => {
+            rocket::custom(config)
+                .launch();
+        }
+        Err(e) => {
+            println!("Error in env config: - {e}");
+            todo!()
+        }
+    }
 }
