@@ -1,19 +1,21 @@
-use std::collections::HashMap;
 use crate::tests::spawn_app::spawn_app;
 use crate::bootstrap::Application;
+use crate::configuration::Config as app_config;
+
+use sqlx::{PgConnection, Connection, PgPool, Executor};
+use uuid::Uuid;
 
 #[tokio::test]
 async fn registration_returns_a_200_for_valid_form_data() {
-    let address = spawn_app().await;
-    let client = reqwest::Client::new();
+    let test_data = spawn_app().await;
 
+    let client = reqwest::Client::new();
     let body = serde_json::json!({
-        "login": "username",
-        "password": "password"
+        "login": "user123",
+        "password": "password123"
     });
-    println!("{}", body);
     let response = client
-        .post(&format!("{}/registration", address))
+        .post(&format!("{}/registration", test_data.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .form(&body)
         .send()
@@ -21,11 +23,19 @@ async fn registration_returns_a_200_for_valid_form_data() {
         .expect("Failed to execute request.");
 
     assert_eq!(200, response.status().as_u16());
+
+    let saved = sqlx::query!("SELECT login, password FROM users")
+        .fetch_one(&test_data.db_pool)
+        .await
+        .expect("Failed to fetch saved user.");
+
+    assert_eq!(saved.login, "user123");
+    assert_eq!(saved.password, "password123");
 }
 
 #[tokio::test]
 async fn registration_returns_a_400_when_data_is_missing() {
-    let address = spawn_app().await;
+    let test_data = spawn_app().await;
     let client = reqwest::Client::new();
 
     let body = serde_json::json!({
@@ -33,7 +43,7 @@ async fn registration_returns_a_400_when_data_is_missing() {
     });
 
     let response = client
-        .post(&format!("{}/registration", address))
+        .post(&format!("{}/registration", test_data.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .form(&body)
         .send()
@@ -48,7 +58,7 @@ async fn registration_returns_a_400_when_data_is_missing() {
 
 #[tokio::test]
 async fn authentication_returns_a_200_for_valid_form_data() {
-    let address = spawn_app().await;
+    let test_data = spawn_app().await;
     let client = reqwest::Client::new();
 
     let body = serde_json::json!({
@@ -57,7 +67,7 @@ async fn authentication_returns_a_200_for_valid_form_data() {
     });
     println!("{}", body);
     let response = client
-        .get(&format!("{}/authentication", address))
+        .get(&format!("{}/authentication", test_data.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .form(&body)
         .send()
@@ -69,7 +79,7 @@ async fn authentication_returns_a_200_for_valid_form_data() {
 
 #[tokio::test]
 async fn authentication_returns_a_400_when_data_is_missing() {
-    let address = spawn_app().await;
+    let test_data = spawn_app().await;
     let client = reqwest::Client::new();
 
     let body = serde_json::json!({
@@ -77,7 +87,7 @@ async fn authentication_returns_a_400_when_data_is_missing() {
     });
 
     let response = client
-        .get(&format!("{}/authentication", address))
+        .get(&format!("{}/authentication", test_data.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .form(&body)
         .send()
