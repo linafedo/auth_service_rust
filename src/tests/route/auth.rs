@@ -1,9 +1,4 @@
 use crate::tests::spawn_app::spawn_app;
-use crate::bootstrap::Application;
-use crate::configuration::Config as app_config;
-
-use sqlx::{PgConnection, Connection, PgPool, Executor};
-use uuid::Uuid;
 
 #[tokio::test]
 async fn registration_returns_a_200_for_valid_form_data() {
