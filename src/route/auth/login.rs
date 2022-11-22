@@ -1,9 +1,29 @@
-use actix_web::{Responder, HttpResponse, web};
+use std::fmt::{Display, Formatter};
+use actix_web::{Responder, HttpResponse, web, ResponseError};
 use sqlx::PgPool;
 use uuid::Uuid;
 use tracing;
 use tracing::{Instrument, instrument};
 use secrecy::{Secret, ExposeSecret};
+use anyhow;
+use actix_web::http::StatusCode;
+
+#[derive(thiserror::Error, Debug)]
+pub enum RegistrationError {
+    #[error("Password must contain at least 6 characters")]
+    PasswordNotCorrect,
+    #[error("User already exists")]
+    AlreadyExist,
+}
+
+impl ResponseError for RegistrationError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            RegistrationError::PasswordNotCorrect => StatusCode::BAD_REQUEST,
+            RegistrationError::AlreadyExist => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+}
 
 #[derive(serde::Deserialize)]
 pub struct AuthRequest {
@@ -20,27 +40,31 @@ pub async fn registration(
     form: web::Form<AuthRequest>,
     pg_pool: web::Data<PgPool>
 ) -> HttpResponse {
-    if form.password.expose_secret().len() < 6 {
-        // todo - handle error
-        return HttpResponse::SeeOther().finish()
+    match validate_data(&form) {
+        Ok(_) => { },
+        Err(e) => return HttpResponse::from_error(e),
     }
-    match insert_user(form, pg_pool).await {
-        Ok(_) => {
-            HttpResponse::Ok().finish()
-        },
-        Err(e) => {
-            HttpResponse::InternalServerError().finish()
-        }
+
+    match insert_user(&form, pg_pool).await {
+        Ok(_) => { HttpResponse::Ok().finish() },
+        Err(e) => { HttpResponse::InternalServerError().finish() }
     }
 }
 
+fn validate_data(form: &web::Form<AuthRequest>) -> Result<(), RegistrationError> {
+    if form.password.expose_secret().len() < 6 {
+        return Err(RegistrationError::PasswordNotCorrect)
+    }
+    // todo: - handle exist user
+    Ok(())
+}
 
 #[tracing::instrument(
 name = "Saving new user in the database",
 skip(form, pg_pool)
 )]
 pub async fn insert_user(
-    form: web::Form<AuthRequest>,
+    form: &web::Form<AuthRequest>,
     pg_pool: web::Data<PgPool>
 ) -> Result<(), sqlx::Error> {
     sqlx::query!(

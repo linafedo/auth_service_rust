@@ -23,6 +23,7 @@ serde_json = "1.0.68"
 
 # error
 anyhow = "1.0.66"
+thiserror = "1.0.24"
 
 # telemetry
 tracing = { version = "0.1", features = ["log"] }
