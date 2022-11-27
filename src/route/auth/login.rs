@@ -1,12 +1,14 @@
 use std::fmt::{Display, Formatter};
+use std::ops::Deref;
 use actix_web::{Responder, HttpResponse, web, ResponseError};
-use sqlx::PgPool;
+use sqlx::{Error, PgPool};
 use uuid::Uuid;
 use tracing;
 use tracing::{Instrument, instrument};
 use secrecy::{Secret, ExposeSecret};
 use anyhow;
 use actix_web::http::StatusCode;
+use once_cell::sync::Lazy;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RegistrationError {
@@ -47,21 +49,28 @@ pub async fn registration(
 
     match insert_user(&form, pg_pool).await {
         Ok(_) => { HttpResponse::Ok().finish() },
-        Err(e) => { HttpResponse::InternalServerError().finish() }
+        Err(e) => {
+            match e {
+                Error::Database(dbe)
+                if dbe.constraint() == Some("users_login_key") => {
+                    HttpResponse::from_error(RegistrationError::AlreadyExist)
+                }
+                _ => {
+                    HttpResponse::InternalServerError().finish()
+                }
+            }
+        }
     }
 }
 
 fn validate_data(form: &web::Form<AuthRequest>) -> Result<(), RegistrationError> {
-    if form.password.expose_secret().len() < 6 {
-        return Err(RegistrationError::PasswordNotCorrect)
-    }
-    // todo: - handle exist user
+    if form.password.expose_secret().len() < 6 { return Err(RegistrationError::PasswordNotCorrect) }
     Ok(())
 }
 
 #[tracing::instrument(
-name = "Saving new user in the database",
-skip(form, pg_pool)
+    name = "Saving new user in the database",
+    skip(form, pg_pool)
 )]
 pub async fn insert_user(
     form: &web::Form<AuthRequest>,
@@ -69,7 +78,8 @@ pub async fn insert_user(
 ) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
-        INSERT INTO users (id, login, password) VALUES ($1, $2, $3)
+        INSERT INTO users (id, login, password)
+        VALUES ($1, $2, $3)
         "#,
         Uuid::new_v4(),
         form.login,
