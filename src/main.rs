@@ -3,6 +3,7 @@ mod tests;
 mod bootstrap;
 mod route;
 mod telemetry;
+mod utils;
 
 use crate::configuration::Config as app_config;
 

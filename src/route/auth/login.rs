@@ -1,14 +1,15 @@
+use crate::route::domain;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 use actix_web::{Responder, HttpResponse, web, ResponseError};
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
-use tracing;
 use tracing::{Instrument, instrument};
 use secrecy::{Secret, ExposeSecret};
-use anyhow;
 use actix_web::http::StatusCode;
 use once_cell::sync::Lazy;
+use tracing_actix_web::root_span_macro::private::http_flavor;
+use crate::route::domain::{UserLogin, UserPassword};
 
 #[derive(thiserror::Error, Debug)]
 pub enum RegistrationError {
@@ -16,6 +17,12 @@ pub enum RegistrationError {
     PasswordNotCorrect,
     #[error("User already exists")]
     AlreadyExist,
+    #[error("Login must contain from 3 to 256 characters")]
+    LoginLengthIsWrong,
+    #[error("Login should be contain only letters and numbers and start with a letter")]
+    LoginIsNotCorrect,
+    #[error("Login should be not empty")]
+    LoginIsEmpty
 }
 
 impl ResponseError for RegistrationError {
@@ -23,14 +30,32 @@ impl ResponseError for RegistrationError {
         match self {
             RegistrationError::PasswordNotCorrect => StatusCode::BAD_REQUEST,
             RegistrationError::AlreadyExist => StatusCode::INTERNAL_SERVER_ERROR,
+            RegistrationError::LoginLengthIsWrong => StatusCode::BAD_REQUEST,
+            RegistrationError::LoginIsNotCorrect => StatusCode::BAD_REQUEST,
+            RegistrationError::LoginIsEmpty => StatusCode::BAD_REQUEST,
         }
     }
 }
 
 #[derive(serde::Deserialize)]
-pub struct AuthRequest {
+pub struct FormData {
     login: String,
-    password: Secret<String>,
+    password: String,
+}
+
+impl TryFrom<FormData> for NewUser {
+    type Error = RegistrationError;
+
+    fn try_from(value: FormData) -> Result<Self, Self::Error> {
+        let login = UserLogin::parse(value.login.clone())?;
+        let password = UserPassword::parse(value.password.clone())?;
+        Ok(Self { login, password })
+    }
+}
+
+pub struct NewUser {
+    pub login: UserLogin,
+    pub password: UserPassword,
 }
 
 #[instrument(
@@ -39,15 +64,15 @@ pub struct AuthRequest {
     fields(user_login = form.login)
 )]
 pub async fn registration(
-    form: web::Form<AuthRequest>,
+    form: web::Form<FormData>,
     pg_pool: web::Data<PgPool>
 ) -> HttpResponse {
-    match validate_data(&form) {
-        Ok(_) => { },
-        Err(e) => return HttpResponse::from_error(e),
-    }
+    let new_user= match NewUser::try_from(form.0) {
+        Ok(new_user) => new_user,
+        Err(e) => return HttpResponse::from_error(e)
+    };
 
-    match insert_user(&form, pg_pool).await {
+    match insert_user(&new_user, pg_pool).await {
         Ok(_) => { HttpResponse::Ok().finish() },
         Err(e) => {
             match e {
@@ -63,17 +88,12 @@ pub async fn registration(
     }
 }
 
-fn validate_data(form: &web::Form<AuthRequest>) -> Result<(), RegistrationError> {
-    if form.password.expose_secret().len() < 6 { return Err(RegistrationError::PasswordNotCorrect) }
-    Ok(())
-}
-
 #[tracing::instrument(
     name = "Saving new user in the database",
-    skip(form, pg_pool)
+    skip(user, pg_pool)
 )]
 pub async fn insert_user(
-    form: &web::Form<AuthRequest>,
+    user: &NewUser,
     pg_pool: web::Data<PgPool>
 ) -> Result<(), sqlx::Error> {
     sqlx::query!(
@@ -82,8 +102,9 @@ pub async fn insert_user(
         VALUES ($1, $2, $3)
         "#,
         Uuid::new_v4(),
-        form.login,
-        form.password.expose_secret())
+        user.login.as_ref(),
+        user.password.as_ref()
+    )
         .execute(pg_pool.get_ref())
         .await
         .map_err(|e| {
@@ -91,9 +112,4 @@ pub async fn insert_user(
             e
         })?;
     Ok(())
-}
-
-pub async fn authentication(_from: web::Form<AuthRequest>) -> impl Responder {
-    println!("AUTHENTICATION: Passed user login: - {}", _from.login);
-    HttpResponse::Ok()
 }

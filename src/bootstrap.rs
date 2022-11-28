@@ -1,4 +1,4 @@
-use crate::route::auth::login::{authentication, registration};
+use crate::route::auth::login::{registration};
 use crate::configuration::{Config};
 
 use actix_web::dev::Server;
@@ -32,7 +32,6 @@ impl Application {
                 App::new()
                     .wrap(TracingLogger::default())
                     .route("/registration", web::post().to(registration))
-                    .route("/authentication", web::get().to(authentication))
                     .app_data(connection.clone())
             })
             .listen(listener)?
