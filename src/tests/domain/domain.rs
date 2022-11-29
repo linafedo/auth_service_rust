@@ -1,10 +1,9 @@
 use crate::route::domain::{UserLogin, UserPassword};
-use claim;
 
 #[cfg(test)]
-mod tests {
+mod login_tests {
     use claim::{assert_err, assert_ok};
-    use crate::route::domain::UserLogin;
+    use crate::route::domain::{UserLogin};
 
     #[test]
     fn login_length_is_valid() {
@@ -51,5 +50,34 @@ mod tests {
     fn login_contains_whitespace() {
         let name = " ".to_string();
         assert_err!( UserLogin::parse(name));
+    }
+}
+
+#[cfg(test)]
+mod password_tests {
+    use claim::{assert_err, assert_ok};
+    use crate::route::domain::{UserPassword};
+
+    #[test]
+    fn password_is_correct() {
+        let password = "a".repeat(25);
+        assert_ok!( UserPassword::parse(password));
+    }
+
+    #[test]
+    fn password_is_empty() {
+        assert_err!( UserPassword::parse("".to_string()));
+    }
+
+    #[test]
+    fn password_length_is_long() {
+        let password = "a".repeat(257);
+        assert_err!( UserPassword::parse(password));
+    }
+
+    #[test]
+    fn password_length_is_short() {
+        let password = "a".repeat(5);
+        assert_err!( UserPassword::parse(password));
     }
 }
