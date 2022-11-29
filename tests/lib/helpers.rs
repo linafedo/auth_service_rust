@@ -1,6 +1,6 @@
-use crate::bootstrap::Application;
-use crate::configuration::Config;
-use crate::telemetry;
+use auth_service::bootstrap::Application;
+use auth_service::configuration::Config;
+use auth_service::telemetry;
 
 use tokio;
 use uuid::Uuid;

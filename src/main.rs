@@ -1,18 +1,11 @@
-mod configuration;
-mod tests;
-mod bootstrap;
-mod route;
-mod telemetry;
-mod utils;
-
-use crate::configuration::Config as app_config;
-
+use auth_service::configuration::Config;
+use auth_service::telemetry;
+use auth_service::bootstrap::Application;
 use tokio;
-use bootstrap::Application;
 
 #[tokio::main]
 pub async fn main() -> anyhow::Result<()> {
-    let config = app_config::load()?;
+    let config = Config::load()?;
 
     let logger = telemetry::create_logger(
         "auth_service".into(),

@@ -1,6 +1,6 @@
-use crate::tests::spawn_app::spawn_app;
 use reqwest::{Client, Response};
 use serde_json::Value;
+use crate::lib::helpers::spawn_app;
 
 const TEST_LOGIN: &str = "user_login";
 const TEST_PASSWORD: &str = "123456";

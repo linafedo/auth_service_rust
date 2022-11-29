@@ -1,9 +1,7 @@
-use crate::route::domain::{UserLogin, UserPassword};
-
 #[cfg(test)]
 mod login_tests {
     use claim::{assert_err, assert_ok};
-    use crate::route::domain::{UserLogin};
+    use auth_service::route::domain::{UserLogin};
 
     #[test]
     fn login_length_is_valid() {
@@ -56,7 +54,7 @@ mod login_tests {
 #[cfg(test)]
 mod password_tests {
     use claim::{assert_err, assert_ok};
-    use crate::route::domain::{UserPassword};
+    use auth_service::route::domain::{UserPassword};
 
     #[test]
     fn password_is_correct() {
