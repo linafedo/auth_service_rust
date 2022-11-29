@@ -1,4 +1,4 @@
-use crate::route::auth::login::{registration};
+use crate::route::auth::registration::{registration};
 use crate::configuration::{Config};
 
 use actix_web::dev::Server;
@@ -8,6 +8,7 @@ use std::net::TcpListener;
 use secrecy::ExposeSecret;
 use sqlx::PgPool;
 use tracing_actix_web::TracingLogger;
+use crate::route::auth::authentication::authentication;
 
 pub struct Application {
     server: Server,
@@ -32,6 +33,7 @@ impl Application {
                 App::new()
                     .wrap(TracingLogger::default())
                     .route("/registration", web::post().to(registration))
+                    .route("/authentication", web::get().to(authentication))
                     .app_data(connection.clone())
             })
             .listen(listener)?
