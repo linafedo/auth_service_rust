@@ -3,6 +3,7 @@ use crate::route::auth::login::RegistrationError;
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
 
+#[derive(Debug)]
 pub struct UserLogin(String);
 
 impl UserLogin {
@@ -32,6 +33,7 @@ impl AsRef<str> for UserLogin {
     }
 }
 
+#[derive(Debug)]
 pub struct UserPassword(Secret<String>);
 
 impl UserPassword {
