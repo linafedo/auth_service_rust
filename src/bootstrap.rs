@@ -1,4 +1,3 @@
-use crate::route::auth::registration::{registration};
 use crate::configuration::{Config};
 
 use actix_web::dev::Server;
@@ -9,6 +8,7 @@ use secrecy::ExposeSecret;
 use sqlx::PgPool;
 use tracing_actix_web::TracingLogger;
 use crate::route::auth::authentication::authentication;
+use crate::route::registration::registration::registration;
 
 pub struct Application {
     server: Server,

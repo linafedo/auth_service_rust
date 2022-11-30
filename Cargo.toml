@@ -46,6 +46,7 @@ rand_core = { version = "0.6", features = ["std"] }
 base64 = "0.13.0"
 config = { version = "0.13", default-features = false, features = ["yaml"] }
 unicode-segmentation = "1.10.0"
+argon2 = "0.2.1"
 
 # tests
 claim = "0.5"

@@ -1,5 +1,5 @@
 use crate::utils::{MAX_LOGIN_LENGTH, MIN_PASSWORD_LENGTH, MIN_LOGIN_LENGTH, MAX_PASSWORD_LENGTH};
-use crate::route::auth::registration::RegistrationError;
+use crate::route::registration::error::RegistrationError;
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
 
