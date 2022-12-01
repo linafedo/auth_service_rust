@@ -12,7 +12,9 @@ pub enum RegistrationError {
     #[error("Login should be contain only letters and numbers and start with a letter")]
     LoginIsNotCorrect,
     #[error("Login should be not empty")]
-    LoginIsEmpty
+    LoginIsEmpty,
+    #[error("Password hashing error")]
+    PasswordHashError
 }
 
 impl ResponseError for RegistrationError {
@@ -23,6 +25,7 @@ impl ResponseError for RegistrationError {
             RegistrationError::LoginLengthIsWrong => StatusCode::BAD_REQUEST,
             RegistrationError::LoginIsNotCorrect => StatusCode::BAD_REQUEST,
             RegistrationError::LoginIsEmpty => StatusCode::BAD_REQUEST,
+            RegistrationError::PasswordHashError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

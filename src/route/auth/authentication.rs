@@ -4,6 +4,7 @@ use actix_web::http::StatusCode;
 use sqlx::{Error, PgPool};
 use tracing::{Instrument, instrument};
 use uuid::Uuid;
+use crate::route::domain::PasswordData;
 
 #[derive(thiserror::Error, Debug)]
 pub enum AuthenticationError {
@@ -31,7 +32,8 @@ pub struct AuthData {
 pub struct AuthUser {
     id: Uuid,
     login: String,
-    password: String,
+    password_hash: String,
+    salt: String,
 }
 
 #[instrument(
@@ -46,7 +48,15 @@ pub async fn authentication(
 ) -> HttpResponse {
     match check_user(&form.0, pg_pool).await {
         Ok(user) => {
-            HttpResponse::Ok().finish()
+            match PasswordData::check_password(
+                form.password.as_str(),
+                user.salt.as_str(),
+                user.password_hash.as_str()
+
+            ) {
+                Ok(_) => HttpResponse::Ok().finish(),
+                Err(_) => HttpResponse::from_error(AuthenticationError::PasswordNotCorrect)
+            }
         },
         Err(e) => {
             match e {
@@ -70,7 +80,7 @@ async fn check_user(
     pg_pool: web::Data<PgPool>) -> Result<AuthUser, sqlx::Error> {
     let result = sqlx::query!(
         r#"
-        SELECT id, login, password FROM users WHERE login = $1
+        SELECT id, login, password_hash, salt FROM users WHERE login = $1
         "#,
         user.login,
     )
@@ -80,6 +90,11 @@ async fn check_user(
             tracing::error!("Failed to execute query: {:?}", e);
             e
         })?;
-    let user = AuthUser{ id: result.id, login: result.login, password: result.password };
+    let user = AuthUser{
+        id: result.id,
+        login: result.login,
+        password_hash: result.password_hash,
+        salt: result.salt
+    };
     Ok(user)
 }

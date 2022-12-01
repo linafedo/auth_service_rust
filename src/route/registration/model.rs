@@ -1,4 +1,4 @@
-use crate::route::domain::{UserLogin, UserPassword};
+use crate::route::domain::{PasswordData, UserLogin, UserPassword};
 use crate::route::registration::error::RegistrationError;
 
 #[derive(serde::Deserialize)]
@@ -19,11 +19,13 @@ impl TryFrom<FormData> for NewUser {
     fn try_from(value: FormData) -> Result<Self, Self::Error> {
         let login = UserLogin::parse(value.login.clone())?;
         let password = UserPassword::parse(value.password.clone())?;
-        Ok(Self { login, password })
+        let password_data = PasswordData::generate(password.expose_secret())?;
+        Ok(Self { login, password, password_data })
     }
 }
 
 pub struct NewUser {
     pub login: UserLogin,
     pub password: UserPassword,
+    pub password_data: PasswordData,
 }

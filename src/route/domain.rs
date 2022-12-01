@@ -4,7 +4,8 @@ use crate::route::registration::error::RegistrationError;
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
 use argon2::password_hash::SaltString;
-use argon2::{Argon2, PasswordHasher};
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use argon2::password_hash::Encoding::B64;
 use rand_core::OsRng;
 use sqlx::Encode;
 
@@ -54,31 +55,6 @@ impl UserPassword {
     pub fn expose_secret(&self) -> &String {
         self.0.expose_secret()
     }
-
-    pub fn generate_hash_password(&self) -> Result<PasswordData, ()> {
-        let argon = Argon2::default();
-        let salt = SaltString::generate(&mut OsRng);
-
-        match argon.hash_password_simple(self.0.expose_secret().as_ref(), &salt) {
-            Ok(result) => {
-                let hash = match result.hash {
-                    Some(result) => result,
-                    None => {
-                        tracing::error!("Password hash is null");
-                        return Err(())
-                    }
-                };
-                Ok( PasswordData{
-                    password_hash: base64::encode(hash),
-                    salt: salt.as_str().to_string()
-                })
-            },
-            Err(e) => {
-                tracing::error!("Password hash generation error - {:?}", e.to_string());
-                Err(())
-            }
-        }
-    }
 }
 
 impl AsRef<str> for UserPassword {
@@ -99,5 +75,61 @@ impl PasswordData {
 
     pub fn get_salt(&self) -> &str {
         &self.salt
+    }
+
+    pub fn generate(password: &String) -> Result<Self, RegistrationError> {
+        let argon = Argon2::default();
+        let salt = SaltString::generate(&mut OsRng);
+
+        match argon.hash_password_simple(
+            password.as_bytes(),
+            salt.as_ref()
+        ) {
+            Ok(result) => {
+                let output = match result.hash {
+                    Some(result) => result,
+                    None => {
+                        tracing::error!("Password hash is null");
+                        return Err(RegistrationError::PasswordHashError)
+                    }
+                };
+                Ok( PasswordData {
+                    password_hash: base64::encode(output.as_bytes()),
+                    salt: salt.as_str().to_string(),
+                })
+            },
+            Err(e) => {
+                tracing::error!("Password hash generation error - {:?}", e.to_string());
+                return Err(RegistrationError::PasswordHashError)
+            }
+        }
+    }
+
+    pub fn check_password(password: &str, salt: &str, password_hash: &str) -> Result<(), ()> {
+        let argon = Argon2::default();
+
+        return match argon.hash_password_simple(
+            password.as_bytes(),
+            salt
+        ) {
+            Ok(result) => {
+                let output = match result.hash {
+                    Some(result) => result,
+                    None => {
+                        tracing::error!("Password hash for check is null");
+                        return Err(())
+                    }
+                };
+                if base64::encode(output.as_bytes()) == password_hash { return Ok(()) };
+                Err(())
+            },
+            Err(e) => {
+                tracing::error!(
+                    "Password hash generation for check returned error - {:?}",
+                    e.to_string()
+                );
+                Err(())
+            }
+        }
     }
 }

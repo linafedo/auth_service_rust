@@ -6,6 +6,7 @@ use actix_web::{HttpResponse, web};
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
 use tracing::{Instrument, instrument};
+use crate::route::domain::PasswordData;
 
 #[instrument(
     name = "Adding a new user",
@@ -47,12 +48,13 @@ pub async fn insert_user(
 ) -> Result<(), Error> {
     sqlx::query!(
         r#"
-        INSERT INTO users (id, login, password)
-        VALUES ($1, $2, $3)
+        INSERT INTO users (id, login, salt, password_hash)
+        VALUES ($1, $2, $3, $4)
         "#,
         Uuid::new_v4(),
         user.login.as_ref(),
-        user.password.as_ref()
+        user.password_data.get_salt(),
+        user.password_data.get_password_hash()
     )
         .execute(pg_pool.get_ref())
         .await
