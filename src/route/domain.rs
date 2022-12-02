@@ -1,6 +1,7 @@
-use std::io::Read;
 use crate::utils::{MAX_LOGIN_LENGTH, MIN_PASSWORD_LENGTH, MIN_LOGIN_LENGTH, MAX_PASSWORD_LENGTH};
 use crate::route::registration::error::RegistrationError;
+
+use std::io::Read;
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
 use argon2::password_hash::SaltString;
