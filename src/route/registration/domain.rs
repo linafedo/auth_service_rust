@@ -82,7 +82,7 @@ impl PasswordData {
         let argon = Argon2::default();
         let salt = SaltString::generate(&mut OsRng);
 
-        match argon.hash_password_simple(
+        match argon.hash_password(
             password.as_bytes(),
             salt.as_ref()
         ) {
@@ -109,7 +109,7 @@ impl PasswordData {
     pub fn check_password(password: &str, salt: &str, password_hash: &str) -> Result<(), ()> {
         let argon = Argon2::default();
 
-        return match argon.hash_password_simple(
+        return match argon.hash_password(
             password.as_bytes(),
             salt
         ) {

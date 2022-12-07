@@ -1,12 +1,12 @@
 use crate::route::registration::model::{FormData, NewUser};
 use crate::route::registration::error::RegistrationError;
+use crate::route::registration::domain::PasswordData;
 
 use std::fmt::{Display, Formatter};
 use actix_web::{HttpResponse, web};
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
 use tracing::{Instrument, instrument};
-use crate::route::domain::PasswordData;
 
 #[instrument(
     name = "Adding a new user",

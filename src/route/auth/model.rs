@@ -1,5 +1,6 @@
+use std::process::id;
 use uuid::Uuid;
-use crate::route::domain::PasswordData;
+use crate::route::registration::domain::PasswordData;
 
 #[derive(serde::Deserialize)]
 pub struct AuthData {
@@ -25,6 +26,10 @@ pub struct AuthUser {
 }
 
 impl AuthUser {
+
+    pub fn get_id(&self) -> Uuid {
+        self.id
+    }
 
     pub fn new(id: Uuid, login: String, password_hash: String, salt: String) -> Self {
         AuthUser{ id, login, password_hash, salt }

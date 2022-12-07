@@ -1,4 +1,4 @@
-use crate::route::domain::{PasswordData, UserLogin, UserPassword};
+use crate::route::registration::domain::{PasswordData, UserLogin, UserPassword};
 use crate::route::registration::error::RegistrationError;
 
 #[derive(serde::Deserialize)]

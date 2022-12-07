@@ -1,13 +1,17 @@
-use crate::route::domain::PasswordData;
+use crate::route::registration::domain::PasswordData;
 use crate::route::auth::error::AuthenticationError;
 use crate::route::auth::model::{AuthUser, AuthData};
 
 use std::arch::asm;
 use actix_web::{HttpResponse, ResponseError, web};
+use actix_web::http::header::HeaderValue;
 use actix_web::http::StatusCode;
+use actix_web::web::to;
 use sqlx::{Error, PgPool};
 use tracing::{Instrument, instrument};
 use uuid::Uuid;
+use crate::token_manager::error::TokenManagerError;
+use crate::token_manager::token;
 
 #[instrument(
     name = "User authentication",
@@ -26,7 +30,20 @@ pub async fn authentication(
                 user.get_password_hash()
 
             ) {
-                Ok(_) => HttpResponse::Ok().finish(),
+                Ok(_) => {
+                    let token = token::new_token(user.get_id().to_string().as_str());
+                    if let Ok(token) = token {
+                        let mut response = HttpResponse::build(StatusCode::OK);
+                        let header = HeaderValue::from_str(token.as_str()).unwrap();
+                        // TODO unwrap!!!!
+                        response.insert_header(("token", header));
+                        return response.finish()
+                    } else {
+                        // todo
+                        HttpResponse::from_error(AuthenticationError::UserNotExist)
+                    }
+
+                },
                 Err(_) => HttpResponse::from_error(AuthenticationError::PasswordNotCorrect)
             }
         },
