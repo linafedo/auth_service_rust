@@ -20,8 +20,8 @@ pub enum RegistrationError {
 impl ResponseError for RegistrationError {
     fn status_code(&self) -> StatusCode {
         match self {
-            RegistrationError::PasswordNotCorrect => StatusCode::BAD_REQUEST,
-            RegistrationError::AlreadyExist => StatusCode::INTERNAL_SERVER_ERROR,
+            RegistrationError::PasswordNotCorrect => StatusCode::CONFLICT,
+            RegistrationError::AlreadyExist => StatusCode::CONFLICT,
             RegistrationError::LoginLengthIsWrong => StatusCode::BAD_REQUEST,
             RegistrationError::LoginIsNotCorrect => StatusCode::BAD_REQUEST,
             RegistrationError::LoginIsEmpty => StatusCode::BAD_REQUEST,

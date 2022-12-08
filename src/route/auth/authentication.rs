@@ -1,5 +1,5 @@
 use crate::route::registration::domain::PasswordData;
-use crate::route::auth::error::AuthenticationError;
+use crate::route::auth::error;
 use crate::route::auth::model::{AuthUser, AuthData};
 use crate::token_manager::error::TokenError;
 use crate::token_manager::token;
@@ -9,9 +9,10 @@ use actix_web::{HttpResponse, ResponseError, web};
 use actix_web::http::header::HeaderValue;
 use actix_web::http::StatusCode;
 use actix_web::web::to;
-use sqlx::{Error, PgPool};
+use sqlx::{PgPool};
 use tracing::{Instrument, instrument};
 use uuid::Uuid;
+use anyhow::Context;
 
 
 #[instrument(
@@ -22,43 +23,33 @@ use uuid::Uuid;
 pub async fn authentication(
     form: web::Form<AuthData>,
     pg_pool: web::Data<PgPool>
-) -> HttpResponse {
-    match check_user(&form.0, pg_pool).await {
-        Ok(user) => {
-            match PasswordData::check_password(
-                form.get_password(),
-                user.get_salt(),
-                user.get_password_hash()
-
-            ) {
-                Ok(_) => {
-                    let token = token::new_token(user.get_id().to_string().as_str());
-                    if let Ok(token) = token {
-                        let mut response = HttpResponse::build(StatusCode::OK);
-                        let header = HeaderValue::from_str(token.as_str()).unwrap();
-                        // TODO unwrap!!!!
-                        response.insert_header(("token", header));
-                        return response.finish()
-                    } else {
-                        // todo
-                        HttpResponse::from_error(AuthenticationError::UserNotExist)
-                    }
-
-                },
-                Err(_) => HttpResponse::from_error(AuthenticationError::PasswordNotCorrect)
-            }
-        },
-        Err(e) => {
-            match e {
-                Error::RowNotFound => {
-                    HttpResponse::from_error(AuthenticationError::UserNotExist)
-                }
-                _ => {
-                    HttpResponse::InternalServerError().finish()
-                }
-            }
+) -> Result<HttpResponse, error::AuthenticationError> {
+    let user = check_user(&form.0, pg_pool)
+        .await
+        .map_err(|e| {
+        match e {
+            sqlx::Error::RowNotFound => { error::AuthenticationError::UserNotExist }
+            _ => { error::AuthenticationError::UnexpectedError(anyhow::Error::from(e)) }
         }
-    }
+    })?;
+    PasswordData::check_password(
+        form.get_password(),
+        user.get_salt(),
+        user.get_password_hash()
+
+    ).map_err(|_| {
+        error::AuthenticationError::PasswordNotCorrect
+    })?;
+
+    let token = token::new_token(user.get_id().to_string().as_str())
+        .context("Failed to generate token for user")?;
+
+    let mut response = HttpResponse::build(StatusCode::OK);
+    let header = HeaderValue::from_str(token.as_str())
+        .context("Failed to put token in header")?;
+
+    response.insert_header(("token", header));
+    Ok(response.finish())
 }
 
 #[tracing::instrument(
