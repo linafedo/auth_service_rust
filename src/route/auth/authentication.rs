@@ -1,6 +1,8 @@
 use crate::route::registration::domain::PasswordData;
 use crate::route::auth::error::AuthenticationError;
 use crate::route::auth::model::{AuthUser, AuthData};
+use crate::token_manager::error::TokenError;
+use crate::token_manager::token;
 
 use std::arch::asm;
 use actix_web::{HttpResponse, ResponseError, web};
@@ -10,8 +12,7 @@ use actix_web::web::to;
 use sqlx::{Error, PgPool};
 use tracing::{Instrument, instrument};
 use uuid::Uuid;
-use crate::token_manager::error::TokenManagerError;
-use crate::token_manager::token;
+
 
 #[instrument(
     name = "User authentication",
