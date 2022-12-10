@@ -1,4 +1,4 @@
-use crate::token_manager::error::TokenError;
+use crate::auth_token::error::TokenError;
 
 use jwt::{SignWithKey, VerifyWithKey, Header, Token};
 use chrono::{Duration};

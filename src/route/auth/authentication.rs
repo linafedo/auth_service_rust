@@ -1,7 +1,7 @@
 use crate::domain::user::model::PasswordData;
 use crate::route::auth::error;
 use crate::route::auth::model::{AuthUser, AuthData};
-use crate::token_manager::token;
+use crate::auth_token::token;
 
 use actix_web::{HttpResponse, web};
 use actix_web::http::header::HeaderValue;
