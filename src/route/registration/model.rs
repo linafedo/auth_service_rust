@@ -29,3 +29,13 @@ pub struct NewUser {
     pub password: UserPassword,
     pub password_data: PasswordData,
 }
+
+impl NewUser {
+    pub fn new(
+        login: UserLogin,
+        password: UserPassword,
+        password_data: PasswordData) -> Self
+    {
+        Self { login, password, password_data }
+    }
+}

@@ -65,6 +65,7 @@ impl AsRef<str> for UserPassword {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct PasswordData {
     password_hash: String,
     salt: String,
