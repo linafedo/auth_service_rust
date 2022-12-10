@@ -1,14 +1,11 @@
 use crate::utils::{MAX_LOGIN_LENGTH, MIN_PASSWORD_LENGTH, MIN_LOGIN_LENGTH, MAX_PASSWORD_LENGTH};
 use crate::domain::user::error::DomainError;
 
-use std::io::Read;
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
 use argon2::password_hash::SaltString;
-use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use argon2::password_hash::Encoding::B64;
+use argon2::{Argon2, PasswordHasher};
 use rand_core::OsRng;
-use sqlx::Encode;
 
 #[derive(Debug)]
 pub struct UserLogin(String);

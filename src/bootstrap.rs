@@ -2,7 +2,6 @@ use crate::configuration::{Config};
 
 use actix_web::dev::Server;
 use actix_web::{HttpServer, App, web};
-use actix_web::middleware::Logger;
 use std::net::TcpListener;
 use secrecy::ExposeSecret;
 use sqlx::PgPool;

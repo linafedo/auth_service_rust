@@ -9,7 +9,6 @@ use rand_core::{OsRng, RngCore};
 use sha2::Sha256;
 use std::io::Write;
 use std::fs;
-use std::collections::BTreeMap;
 
 
 #[derive(Default, Deserialize, Serialize)]
@@ -48,7 +47,7 @@ pub fn verify_token(token: &str) -> Result<(), TokenError> {
                 tracing::error!("Error generating new secret key {}", e.to_string());
                 TokenError::GenerateKeyError(e.to_string())
             })?;
-            let _token: Token<Header, Custom, _> = VerifyWithKey::verify_with_key(token, &generated_key).map_err(|e| {
+            let _token: Token<Header, Custom, _> = VerifyWithKey::verify_with_key(token, &generated_key).map_err(|_| {
                 tracing::error!("Error verify token");
                 TokenError::VerifyTokenError
             })?;

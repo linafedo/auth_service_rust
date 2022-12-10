@@ -1,16 +1,13 @@
 use crate::domain::user::model::PasswordData;
 use crate::route::auth::error;
 use crate::route::auth::model::{AuthUser, AuthData};
-use crate::token_manager::error::TokenError;
 use crate::token_manager::token;
 
-use std::arch::asm;
-use actix_web::{HttpResponse, ResponseError, web};
+use actix_web::{HttpResponse, web};
 use actix_web::http::header::HeaderValue;
 use actix_web::http::StatusCode;
 use sqlx::{PgPool};
-use tracing::{Instrument, instrument};
-use uuid::Uuid;
+use tracing::instrument;
 
 #[instrument(
     name = "User authentication",

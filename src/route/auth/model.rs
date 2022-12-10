@@ -1,5 +1,4 @@
 use uuid::Uuid;
-use crate::domain::user::model::PasswordData;
 
 #[derive(serde::Deserialize)]
 pub struct AuthData {
