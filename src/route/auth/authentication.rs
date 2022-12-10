@@ -1,4 +1,4 @@
-use crate::route::registration::domain::PasswordData;
+use crate::domain::model::PasswordData;
 use crate::route::auth::error;
 use crate::route::auth::model::{AuthUser, AuthData};
 use crate::token_manager::error::TokenError;
@@ -8,12 +8,9 @@ use std::arch::asm;
 use actix_web::{HttpResponse, ResponseError, web};
 use actix_web::http::header::HeaderValue;
 use actix_web::http::StatusCode;
-use actix_web::web::to;
 use sqlx::{PgPool};
 use tracing::{Instrument, instrument};
 use uuid::Uuid;
-use anyhow::Context;
-
 
 #[instrument(
     name = "User authentication",
@@ -42,11 +39,15 @@ pub async fn authentication(
     })?;
 
     let token = token::new_token(user.get_id().to_string().as_str())
-        .context("Failed to generate token for user")?;
+        .map_err(|e|
+            error::AuthenticationError::UnexpectedError(anyhow::Error::from(e))
+        )?;
 
     let mut response = HttpResponse::build(StatusCode::OK);
     let header = HeaderValue::from_str(token.as_str())
-        .context("Failed to put token in header")?;
+        .map_err(|e|
+            error::AuthenticationError::UnexpectedError(anyhow::Error::from(e))
+        )?;
 
     response.insert_header(("token", header));
     Ok(response.finish())

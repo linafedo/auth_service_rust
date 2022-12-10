@@ -1,6 +1,6 @@
 use crate::route::registration::model::{FormData, NewUser};
 use crate::route::registration::error::RegistrationError;
-use crate::route::registration::domain::PasswordData;
+use crate::domain::model::PasswordData;
 
 use std::fmt::{Display, Formatter};
 use actix_web::{HttpResponse, web};
@@ -16,26 +16,23 @@ use tracing::{Instrument, instrument};
 pub async fn registration(
     form: web::Form<FormData>,
     pg_pool: web::Data<PgPool>
-) -> HttpResponse {
-    let new_user= match NewUser::try_from(form.0) {
-        Ok(new_user) => new_user,
-        Err(e) => return HttpResponse::from_error(e)
-    };
+) -> Result<HttpResponse, RegistrationError> {
+    let new_user = NewUser::try_from(form.0)?;
 
-    match insert_user(&new_user, pg_pool).await {
-        Ok(_) => { HttpResponse::Ok().finish() },
-        Err(e) => {
+    insert_user(&new_user, pg_pool)
+        .await
+        .map_err( |e| {
             match e {
                 Error::Database(dbe)
                 if dbe.constraint() == Some("users_login_key") => {
-                    HttpResponse::from_error(RegistrationError::AlreadyExist)
+                    RegistrationError::AlreadyExist
                 }
                 _ => {
-                    HttpResponse::InternalServerError().finish()
+                    RegistrationError::UnexpectedError(anyhow::Error::from(e))
                 }
             }
-        }
-    }
+        })?;
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[tracing::instrument(

@@ -1,6 +1,5 @@
-use std::process::id;
 use uuid::Uuid;
-use crate::route::registration::domain::PasswordData;
+use crate::domain::model::PasswordData;
 
 #[derive(serde::Deserialize)]
 pub struct AuthData {

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod login_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::route::registration::domain::{UserLogin};
+    use auth_service::route::registration::domain1::{UserLogin};
 
     #[test]
     fn login_length_is_valid() {
@@ -54,7 +54,7 @@ mod login_tests {
 #[cfg(test)]
 mod password_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::route::registration::domain::{UserPassword};
+    use auth_service::route::registration::domain1::{UserPassword};
 
     #[test]
     fn password_is_correct() {
