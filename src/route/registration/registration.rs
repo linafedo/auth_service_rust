@@ -1,6 +1,6 @@
 use crate::route::registration::model::{FormData, NewUser};
 use crate::route::registration::error::RegistrationError;
-use crate::domain::model::PasswordData;
+use crate::domain::user::model::PasswordData;
 
 use std::fmt::{Display, Formatter};
 use actix_web::{HttpResponse, web};

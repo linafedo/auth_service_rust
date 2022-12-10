@@ -1,6 +1,6 @@
 use actix_web::http::StatusCode;
 use actix_web::ResponseError;
-use crate::domain::error::DomainError;
+use crate::domain::user::error::DomainError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RegistrationError {

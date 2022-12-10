@@ -1,5 +1,5 @@
 use crate::utils::{MAX_LOGIN_LENGTH, MIN_PASSWORD_LENGTH, MIN_LOGIN_LENGTH, MAX_PASSWORD_LENGTH};
-use crate::domain::error::DomainError;
+use crate::domain::user::error::DomainError;
 
 use std::io::Read;
 use secrecy::{Secret, ExposeSecret};

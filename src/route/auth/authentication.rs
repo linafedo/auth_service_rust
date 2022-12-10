@@ -1,4 +1,4 @@
-use crate::domain::model::PasswordData;
+use crate::domain::user::model::PasswordData;
 use crate::route::auth::error;
 use crate::route::auth::model::{AuthUser, AuthData};
 use crate::token_manager::error::TokenError;
