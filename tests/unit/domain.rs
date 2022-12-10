@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod login_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::route::registration::domain1::{UserLogin};
+    use auth_service::domain::user::error::DomainError;
+    use auth_service::domain::user::model::UserLogin;
 
     #[test]
     fn login_length_is_valid() {
@@ -10,51 +11,45 @@ mod login_tests {
     }
 
     #[test]
-    fn login_length_is_long() {
-        let name = "a".repeat(258);
-        assert_err!( UserLogin::parse(name));
-    }
-
-    #[test]
-    fn login_is_empty() {
-        assert_err!( UserLogin::parse("".to_string()));
+    fn login_length_is_wrong() {
+        let items = ["a".repeat(258), "aa".to_string(), "a".to_string()];
+        for i in items {
+            let result = UserLogin::parse(i);
+            assert_eq!( result.err().unwrap(), DomainError::LoginLengthIsWrong);
+        }
     }
 
     #[test]
     fn login_contains_forbidden_characters() {
-        let name = "(Alex)".to_string();
-        assert_err!( UserLogin::parse(name));
-
-        let name = "/Alex".to_string();
-        assert_err!( UserLogin::parse(name));
-
-        let name = "\"Alex".to_string();
-        assert_err!( UserLogin::parse(name));
-
-        let name = "<Alex>".to_string();
-        assert_err!( UserLogin::parse(name));
-
-        let name = "{Alex}".to_string();
-        assert_err!( UserLogin::parse(name));
-
-        let name = "-Alex-".to_string();
-        assert_err!( UserLogin::parse(name));
-
-        let name = "\\Alex-".to_string();
-        assert_err!( UserLogin::parse(name));
+        let items = [
+            "(Alex)",
+            "/Alex",
+            "\"Alex",
+            "<Alex>",
+            "{Alex}",
+            "-Alex-",
+            "\\Alex-",
+        ];
+        for i in items {
+            let result = UserLogin::parse(i.to_string());
+            assert_eq!( result.err().unwrap(), DomainError::LoginIsNotCorrect);
+        }
     }
 
     #[test]
-    fn login_contains_whitespace() {
-        let name = " ".to_string();
-        assert_err!( UserLogin::parse(name));
+    fn login_is_empty() {
+        let items = ["", " "];
+        for i in items {
+            let result = UserLogin::parse(i.to_string());
+            assert_eq!( result.err().unwrap(), DomainError::LoginIsEmpty);
+        }
     }
 }
 
 #[cfg(test)]
 mod password_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::route::registration::domain1::{UserPassword};
+    use auth_service::domain::user::model::UserPassword;
 
     #[test]
     fn password_is_correct() {

@@ -1,5 +1,5 @@
 
-#[derive(Clone, Copy, thiserror::Error, Debug)]
+#[derive(Clone, Copy, thiserror::Error, Debug, PartialEq)]
 pub enum DomainError {
     #[error("Received login is empty.")]
     LoginIsEmpty,
