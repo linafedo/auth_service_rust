@@ -1,6 +1,6 @@
 use reqwest::{Client, Response};
 use serde_json::Value;
-use auth_service::route::domain::PasswordData;
+use auth_service::domain::user::model::PasswordData;
 use crate::lib::helpers::spawn_app;
 
 const TEST_LOGIN: &str = "user_login";
@@ -57,7 +57,7 @@ async fn registration_returns_a_400_when_login_is_wrong() {
 }
 
 #[tokio::test]
-async fn registration_returns_a_500_when_login_is_exist() {
+async fn registration_returns_a_409_when_login_is_exist() {
     let test_data = spawn_app().await;
     let client = reqwest::Client::new();
 
@@ -87,11 +87,11 @@ async fn registration_returns_a_500_when_login_is_exist() {
         test_data.address
     ).await;
 
-    assert_eq!(500, response.status().as_u16());
+    assert_eq!(409, response.status().as_u16());
 }
 
 #[tokio::test]
-async fn registration_returns_a_500_when_password_is_wrong() {
+async fn registration_returns_a_409_when_password_is_wrong() {
     let test_data = spawn_app().await;
     let client = reqwest::Client::new();
 
@@ -102,5 +102,5 @@ async fn registration_returns_a_500_when_password_is_wrong() {
 
     let response = get_response(body, client, test_data.address).await;
 
-    assert_eq!(400, response.status().as_u16());
+    assert_eq!(409, response.status().as_u16());
 }

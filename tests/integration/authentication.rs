@@ -57,7 +57,7 @@ async fn authentication_returns_a_200_for_valid_form_data() {
 }
 
 #[tokio::test]
-async fn authentication_returns_a_404_for_invalid_password() {
+async fn authentication_returns_a_409_for_invalid_password() {
     // registration
     let test_data = spawn_app().await;
     let client = reqwest::Client::new();
@@ -77,11 +77,11 @@ async fn authentication_returns_a_404_for_invalid_password() {
 
     // authentication
     let response = get_response_for_auth(body, client, test_data.address).await;
-    assert_eq!(400, response.status().as_u16());
+    assert_eq!(409, response.status().as_u16());
 }
 
 #[tokio::test]
-async fn authentication_returns_a_404_when_user_not_exist() {
+async fn authentication_returns_a_409_when_user_not_exist() {
     // registration
     let test_data = spawn_app().await;
     let client = reqwest::Client::new();
@@ -101,5 +101,5 @@ async fn authentication_returns_a_404_when_user_not_exist() {
 
     // authentication
     let response = get_response_for_auth(body, client, test_data.address).await;
-    assert_eq!(400, response.status().as_u16());
+    assert_eq!(409, response.status().as_u16());
 }
