@@ -12,7 +12,7 @@ const TEST_PASSWORD_KEY: &str = "password";
 
 async fn get_response_for_auth(body: Value, client: Client, address: String) -> Response {
     return client
-        .get(&format!("{}/authentication", address))
+        .get(&format!("{}/api/v1/authentication", address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .form(&body)
         .send()
@@ -22,7 +22,7 @@ async fn get_response_for_auth(body: Value, client: Client, address: String) -> 
 
 async fn get_response_for_registration(body: &Value, client: &Client, address: &String) -> Response {
     return client
-        .post(&format!("{}/registration", address))
+        .post(&format!("{}/api/v1/registration", address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .form(&body)
         .send()

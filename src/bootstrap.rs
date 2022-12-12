@@ -27,14 +27,22 @@ impl Application {
         )?;
         let port = listener.local_addr().unwrap().port();
 
-        let server = HttpServer::new(move||
-            {
-                App::new()
-                    .wrap(TracingLogger::default())
-                    .route("/registration", web::post().to(registration))
-                    .route("/authentication", web::get().to(authentication))
-                    .app_data(connection.clone())
-            })
+        let server = HttpServer::new(move || {
+            App::new()
+                .wrap(TracingLogger::default())
+                .service(
+                    web::scope("api/v1")
+                        .route(
+                            "/registration",
+                            web::post().to(registration),
+                        )
+                        .route(
+                            "/authentication",
+                            web::get().to(authentication),
+                        )
+                )
+                .app_data(connection.clone())
+        })
             .listen(listener)?
             .run();
         Ok(Self {server, port})
