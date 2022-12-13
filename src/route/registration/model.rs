@@ -1,7 +1,8 @@
 use crate::domain::user::model::{PasswordData, UserLogin, UserPassword};
 use crate::route::registration::error::RegistrationError;
+use utoipa::ToSchema;
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, ToSchema)]
 pub struct FormData {
     login: String,
     password: String,

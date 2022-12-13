@@ -1,6 +1,7 @@
 use uuid::Uuid;
+use utoipa::ToSchema;
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, ToSchema)]
 pub struct AuthData {
     login: String,
     password: String,
@@ -39,5 +40,17 @@ impl AuthUser {
 
     pub fn get_salt(&self) -> &String {
         &self.salt
+    }
+}
+
+#[derive(serde::Serialize, ToSchema)]
+pub struct AuthResponse {
+    id: String,
+    token: String
+}
+
+impl AuthResponse {
+    pub fn new(id: String, token: String) -> Self {
+        AuthResponse{id, token}
     }
 }

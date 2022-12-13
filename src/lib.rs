@@ -7,3 +7,4 @@ pub mod telemetry;
 pub mod utils;
 pub mod auth_token;
 pub mod domain;
+pub mod api_documentation;

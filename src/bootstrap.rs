@@ -1,13 +1,15 @@
 use crate::configuration::{Config};
-
+use crate::route::auth::authentication::authentication;
+use crate::route::registration::registration::registration;
+use crate::api_documentation::ServiceApiDoc;
 use actix_web::dev::Server;
 use actix_web::{HttpServer, App, web};
 use std::net::TcpListener;
 use secrecy::ExposeSecret;
 use sqlx::PgPool;
 use tracing_actix_web::TracingLogger;
-use crate::route::auth::authentication::authentication;
-use crate::route::registration::registration::registration;
+use utoipa_swagger_ui::SwaggerUi;
+use utoipa::OpenApi;
 
 pub struct Application {
     server: Server,
@@ -26,6 +28,7 @@ impl Application {
             (config.application.host, config.application.port)
         )?;
         let port = listener.local_addr().unwrap().port();
+        let open_api = ServiceApiDoc::openapi();
 
         let server = HttpServer::new(move || {
             App::new()
@@ -40,6 +43,9 @@ impl Application {
                             "/authentication",
                             web::get().to(authentication),
                         )
+                )
+                .service(
+                    SwaggerUi::new("/swagger/{_:.*}").url("/api-doc/openapi.json", open_api.clone())
                 )
                 .app_data(connection.clone())
         })
@@ -57,4 +63,3 @@ impl Application {
         self.port
     }
 }
-

@@ -5,14 +5,28 @@ use actix_web::{HttpResponse, web};
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
 use tracing::{instrument};
+use utoipa;
 
+#[utoipa::path(
+    post,
+    path = "/api/v1/registration",
+    request_body = FormData,
+    responses(
+        (status = 200),
+        (status = 409, description = "User already exists"),
+        (status = 400, description = "Password must contain at least 6 characters"),
+        (status = 400, description = "Login must contain from 3 to 256 characters"),
+        (status = 400, description = "Login should be contain only letters and numbers and start with a letter"),
+        (status = 400, description = "Login should be not empty"),
+    ),
+)]
 #[instrument(
     name = "Adding a new user",
     skip(form, pg_pool),
     fields(user_login = form.get_login())
 )]
 pub async fn registration(
-    form: web::Form<FormData>,
+    form: web::Json<FormData>,
     pg_pool: web::Data<PgPool>
 ) -> Result<HttpResponse, RegistrationError> {
     let new_user = NewUser::try_from(form.0)?;

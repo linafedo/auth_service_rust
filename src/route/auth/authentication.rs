@@ -1,21 +1,33 @@
 use crate::domain::user::model::PasswordData;
 use crate::route::auth::error;
-use crate::route::auth::model::{AuthUser, AuthData};
+use crate::route::auth::model::{AuthUser, AuthData, AuthResponse};
 use crate::auth_token::token;
 
 use actix_web::{HttpResponse, web};
 use actix_web::http::header::HeaderValue;
 use actix_web::http::StatusCode;
+use actix_web::web::to;
 use sqlx::{PgPool};
 use tracing::instrument;
+use utoipa;
 
+#[utoipa::path(
+    get,
+    path = "/api/v1/authentication",
+    request_body = AuthData,
+    responses(
+        (status = 200, body = AuthResponse),
+        (status = 409, description = "Password is not correct"),
+        (status = 400, description = "User not exist")
+    ),
+)]
 #[instrument(
     name = "User authentication",
     skip(form, pg_pool),
     fields(user_login = form.get_login())
 )]
 pub async fn authentication(
-    form: web::Form<AuthData>,
+    form: web::Json<AuthData>,
     pg_pool: web::Data<PgPool>
 ) -> Result<HttpResponse, error::AuthenticationError> {
     let user = check_user(&form.0, pg_pool)
@@ -40,14 +52,8 @@ pub async fn authentication(
             error::AuthenticationError::UnexpectedError(anyhow::Error::from(e))
         )?;
 
-    let mut response = HttpResponse::build(StatusCode::OK);
-    let header = HeaderValue::from_str(token.as_str())
-        .map_err(|e|
-            error::AuthenticationError::UnexpectedError(anyhow::Error::from(e))
-        )?;
-
-    response.insert_header(("token", header));
-    Ok(response.finish())
+    let response = AuthResponse::new(user.get_id().to_string(), token);
+    Ok(HttpResponse::Created().json(response))
 }
 
 #[tracing::instrument(
