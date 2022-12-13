@@ -2,7 +2,7 @@
 mod login_tests {
     use claim::{assert_ok};
     use auth_service::domain::user::error::DomainError;
-    use auth_service::domain::user::model::UserLogin;
+    use auth_service::domain::user::new_user::UserLogin;
 
     #[test]
     fn login_length_is_valid() {
@@ -49,9 +49,9 @@ mod login_tests {
 #[cfg(test)]
 mod password_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::domain::user::model::{UserLogin, UserPassword, PasswordData};
+    use auth_service::domain::user::new_user::{UserLogin, UserPassword, PasswordData};
     use auth_service::domain::user::error::DomainError;
-    use auth_service::route::registration::model::NewUser;
+    use auth_service::route::dto::auth_data::NewUser;
 
     #[test]
     fn password_is_correct() {
@@ -90,9 +90,9 @@ mod password_tests {
 #[cfg(test)]
 mod password_data_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::domain::user::model::{UserLogin, UserPassword, PasswordData};
+    use auth_service::domain::user::new_user::{UserLogin, UserPassword, PasswordData};
     use auth_service::domain::user::error::DomainError;
-    use auth_service::route::registration::model::NewUser;
+    use auth_service::route::dto::auth_data::NewUser;
 
     #[test]
     fn return_valid_password_data_fields() {

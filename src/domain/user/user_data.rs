@@ -1,10 +1,10 @@
-use crate::utils::{MAX_LOGIN_LENGTH, MIN_PASSWORD_LENGTH, MIN_LOGIN_LENGTH, MAX_PASSWORD_LENGTH};
 use crate::domain::user::error::DomainError;
+use crate::utils;
 
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
-use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHasher};
+use argon2::password_hash::SaltString;
 use rand_core::OsRng;
 
 #[derive(Debug)]
@@ -21,8 +21,8 @@ impl UserLogin {
             tracing::error!("{:?}", DomainError::LoginIsEmpty);
             return Err(DomainError::LoginIsEmpty)
         }
-        if string.graphemes(true).count() > MAX_LOGIN_LENGTH
-            || string.graphemes(true).count() < MIN_LOGIN_LENGTH {
+        if string.graphemes(true).count() > utils::MAX_LOGIN_LENGTH
+            || string.graphemes(true).count() < utils::MIN_LOGIN_LENGTH {
             tracing::error!("{:?}", DomainError::LoginLengthIsWrong);
             return Err(DomainError::LoginLengthIsWrong)
         }
@@ -46,8 +46,8 @@ pub struct UserPassword(Secret<String>);
 impl UserPassword {
     pub fn parse(string: String) -> Result<UserPassword, DomainError> {
         if string.trim().is_empty()
-            || string.graphemes(true).count() < MIN_PASSWORD_LENGTH
-            || string.graphemes(true).count() > MAX_PASSWORD_LENGTH {
+            || string.graphemes(true).count() < utils::MIN_PASSWORD_LENGTH
+            || string.graphemes(true).count() > utils::MAX_PASSWORD_LENGTH {
             tracing::error!("{:?}", DomainError::PasswordNotCorrect);
             return Err(DomainError::PasswordNotCorrect)
         }

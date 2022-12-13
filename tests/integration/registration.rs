@@ -1,6 +1,6 @@
 use reqwest::{Client, Response};
 use serde_json::Value;
-use auth_service::domain::user::model::PasswordData;
+use auth_service::domain::user::new_user::PasswordData;
 use crate::lib::helpers::spawn_app;
 
 const TEST_LOGIN: &str = "user_login";

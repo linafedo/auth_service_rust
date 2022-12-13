@@ -1,8 +1,7 @@
 use crate::route::auth::authentication::__path_authentication;
 use crate::route::registration::registration::__path_registration;
-use crate::route::auth::model::AuthData;
-use crate::route::registration::model::FormData;
-use crate::route::auth::model::AuthResponse;
+use crate::route::dto::auth_data::AuthData;
+use crate::route::dto::auth_response::AuthResponse;
 
 use utoipa::OpenApi;
 
@@ -15,7 +14,6 @@ use utoipa::OpenApi;
     components(
         schemas(
             AuthData,
-            FormData,
             AuthResponse,
         )
     ),

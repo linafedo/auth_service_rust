@@ -1,12 +1,13 @@
-use crate::domain::user::model::PasswordData;
+use crate::domain::user::user_data::PasswordData;
 use crate::route::auth::error;
-use crate::route::auth::model::{AuthUser, AuthData, AuthResponse};
+use crate::domain::user::auth_user::AuthUser;
+use crate::route::dto::auth_data::AuthData;
+use crate::route::dto::auth_response::AuthResponse;
 use crate::auth_token::token;
 
 use actix_web::{HttpResponse, web};
 use actix_web::http::header::HeaderValue;
 use actix_web::http::StatusCode;
-use actix_web::web::to;
 use sqlx::{PgPool};
 use tracing::instrument;
 use utoipa;

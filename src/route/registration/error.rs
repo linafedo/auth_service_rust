@@ -1,5 +1,6 @@
 use actix_web::http::StatusCode;
-use actix_web::ResponseError;
+use actix_web::{HttpResponse, ResponseError};
+use actix_web::body::BoxBody;
 use crate::domain::user::error::DomainError;
 
 #[derive(thiserror::Error, Debug)]
@@ -18,6 +19,30 @@ pub enum RegistrationError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
+impl RegistrationError {
+    pub fn get_internal_error_code(&self) -> &str {
+        match self {
+            RegistrationError::PasswordNotCorrect => "registration_001",
+            RegistrationError::AlreadyExist => "registration_002",
+            RegistrationError::LoginLengthIsWrong => "registration_003",
+            RegistrationError::LoginIsNotCorrect => "registration_004",
+            RegistrationError::LoginIsEmpty => "registration_005",
+            RegistrationError::UnexpectedError(_) => "registration_006",
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            RegistrationError::PasswordNotCorrect => "PasswordNotCorrect",
+            RegistrationError::AlreadyExist => "AlreadyExist",
+            RegistrationError::LoginLengthIsWrong => "LoginLengthIsWrong",
+            RegistrationError::LoginIsNotCorrect => "LoginIsNotCorrect",
+            RegistrationError::LoginIsEmpty => "LoginIsEmpty",
+            RegistrationError::UnexpectedError(_) => "UnexpectedError",
+        }
+    }
+}
+
 impl ResponseError for RegistrationError {
     fn status_code(&self) -> StatusCode {
         match self {
@@ -28,6 +53,16 @@ impl ResponseError for RegistrationError {
             RegistrationError::LoginIsEmpty => StatusCode::BAD_REQUEST,
             RegistrationError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
+    }
+
+    fn error_response(&self) -> HttpResponse<BoxBody> {
+        let status_code = self.status_code();
+        let error_response = ErrorResponse {
+            code: self.get_internal_error_code().to_string(),
+            message: self.to_string(),
+            error: self.name().to_string(),
+        };
+        HttpResponse::build(status_code).json(error_response)
     }
 }
 
@@ -51,4 +86,11 @@ impl From<DomainError> for RegistrationError {
             }
         }
     }
+}
+
+#[derive(serde::Serialize)]
+struct ErrorResponse {
+    code: String,
+    error: String,
+    message: String,
 }

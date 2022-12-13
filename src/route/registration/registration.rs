@@ -1,5 +1,6 @@
-use crate::route::registration::model::{FormData, NewUser};
+use crate::route::dto::auth_data::AuthData;
 use crate::route::registration::error::RegistrationError;
+use crate::domain::user::new_user::NewUser;
 
 use actix_web::{HttpResponse, web};
 use sqlx::{Error, PgPool};
@@ -10,7 +11,7 @@ use utoipa;
 #[utoipa::path(
     post,
     path = "/api/v1/registration",
-    request_body = FormData,
+    request_body = AuthData,
     responses(
         (status = 200),
         (status = 409, description = "User already exists"),
@@ -26,7 +27,7 @@ use utoipa;
     fields(user_login = form.get_login())
 )]
 pub async fn registration(
-    form: web::Json<FormData>,
+    form: web::Json<AuthData>,
     pg_pool: web::Data<PgPool>
 ) -> Result<HttpResponse, RegistrationError> {
     let new_user = NewUser::try_from(form.0)?;

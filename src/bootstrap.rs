@@ -45,7 +45,12 @@ impl Application {
                         )
                 )
                 .service(
-                    SwaggerUi::new("/swagger/{_:.*}").url("/api-doc/openapi.json", open_api.clone())
+                    SwaggerUi::new(
+                        "/swagger/{_:.*}")
+                        .url(
+                            "/api-doc/openapi.json",
+                            open_api.clone()
+                        )
                 )
                 .app_data(connection.clone())
         })
