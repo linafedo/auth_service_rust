@@ -1,12 +1,14 @@
 use crate::route::dto::auth_data::AuthData;
 use crate::route::registration::error::RegistrationError;
 use crate::domain::user::new_user::NewUser;
+use crate::route::dto::error::ResponseError;
 
 use actix_web::{HttpResponse, web};
 use sqlx::{Error, PgPool};
 use uuid::Uuid;
 use tracing::{instrument};
 use utoipa;
+use serde_json::json;
 
 #[utoipa::path(
     post,
@@ -14,11 +16,9 @@ use utoipa;
     request_body = AuthData,
     responses(
         (status = 200),
-        (status = 409, description = "User already exists"),
-        (status = 400, description = "Password must contain at least 6 characters"),
-        (status = 400, description = "Login must contain from 3 to 256 characters"),
-        (status = 400, description = "Login should be contain only letters and numbers and start with a letter"),
-        (status = 400, description = "Login should be not empty"),
+        (status = 409, body = ResponseError, example = json!(RegistrationError::password_not_correct_error_example())),
+        (status = 400, body = ResponseError, example = json!(RegistrationError::user_exist_error_example())),
+        (status = 500, body = ResponseError, example = json!(ResponseError::internal_error_example()))
     ),
 )]
 #[instrument(

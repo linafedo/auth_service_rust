@@ -17,7 +17,7 @@ actix-web = "4.2.1"
 
 #db
 sqlx = { version = "0.6", default-features = false, features = [
-    "runtime-tokio-rustls", "macros", "postgres", "uuid", "chrono", "migrate"
+    "runtime-tokio-rustls", "macros", "postgres", "uuid", "chrono", "migrate",
 ]}
 
 #async

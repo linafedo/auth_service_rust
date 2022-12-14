@@ -3,6 +3,7 @@ use crate::route::registration::registration::__path_registration;
 use crate::route::dto::auth_data::AuthData;
 use crate::route::dto::auth_response::AuthResponse;
 
+use crate::route::dto::error::ResponseError;
 use utoipa::OpenApi;
 
 #[derive(OpenApi)]
@@ -15,6 +16,7 @@ use utoipa::OpenApi;
         schemas(
             AuthData,
             AuthResponse,
+            ResponseError,
         )
     ),
 )]

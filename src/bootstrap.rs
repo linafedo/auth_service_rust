@@ -2,6 +2,8 @@ use crate::configuration::{Config};
 use crate::route::auth::authentication::authentication;
 use crate::route::registration::registration::registration;
 use crate::api_documentation::ServiceApiDoc;
+use crate::error::error_to_json_handler;
+
 use actix_web::dev::Server;
 use actix_web::{HttpServer, App, web};
 use std::net::TcpListener;
@@ -33,6 +35,7 @@ impl Application {
         let server = HttpServer::new(move || {
             App::new()
                 .wrap(TracingLogger::default())
+                .wrap(error_to_json_handler())
                 .service(
                     web::scope("api/v1")
                         .route(
