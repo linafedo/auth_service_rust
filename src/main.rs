@@ -8,7 +8,7 @@ use auth_service::telemetry::Level;
 pub async fn main() -> anyhow::Result<()> {
     let config = Config::load()?;
 
-    let logger = telemetry::create_logger(
+    let (logger, _guard) = telemetry::create_logger(
         "auth_service".into(),
         config.application.log.level.unwrap_or(Level::Info),
     )?;
