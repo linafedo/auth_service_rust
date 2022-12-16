@@ -2,6 +2,7 @@ use auth_service::configuration::Config;
 use auth_service::telemetry;
 use auth_service::bootstrap::Application;
 use tokio;
+use auth_service::telemetry::Level;
 
 #[tokio::main]
 pub async fn main() -> anyhow::Result<()> {
@@ -9,8 +10,7 @@ pub async fn main() -> anyhow::Result<()> {
 
     let logger = telemetry::create_logger(
         "auth_service".into(),
-        "debug".into(),
-        std::io::stdout
+        config.application.log.level.unwrap_or(Level::Info),
     )?;
     telemetry::init_logger(logger)?;
 

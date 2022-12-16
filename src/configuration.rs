@@ -2,14 +2,16 @@ use serde::Deserialize;
 use config::ConfigError;
 use std::env::current_dir;
 use secrecy::{ExposeSecret, Secret};
+use crate::telemetry::Level;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct AppConfig {
     pub host: String,
     pub port: u16,
+    pub log: Log
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: Secret<String>,
@@ -18,10 +20,15 @@ pub struct DatabaseSettings {
     pub database_name: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Config {
     pub application: AppConfig,
     pub database: DatabaseSettings,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Log {
+    pub level: Option<Level>
 }
 
 impl Config {
