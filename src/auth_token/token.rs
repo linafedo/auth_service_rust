@@ -34,8 +34,6 @@ pub fn new_token(user_id: &str) -> Result<String, TokenError> {
         tracing::error!("Error signing token with secret key {}", e.to_string());
         TokenError::SignTokenError(e.to_string())
     })?;
-    // TODO
-    println!("verify token result- {:?}", verify_token(signed_token.as_str())?);
     Ok(signed_token.into())
 }
 
