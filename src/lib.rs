@@ -10,3 +10,4 @@ pub mod domain;
 pub mod api_documentation;
 pub mod error;
 pub mod repository;
+pub mod password_manager;

@@ -3,9 +3,6 @@ use crate::utils;
 
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
-use argon2::{Argon2, PasswordHasher};
-use argon2::password_hash::SaltString;
-use rand_core::OsRng;
 
 #[derive(Debug)]
 pub struct UserLogin(String);
@@ -54,7 +51,7 @@ impl UserPassword {
         Ok(UserPassword { 0: Secret::new(string) })
     }
 
-    pub fn expose_secret(&self) -> &String {
+    pub fn expose_secret(&self) -> &str {
         self.0.expose_secret()
     }
 }
@@ -67,74 +64,12 @@ impl AsRef<str> for UserPassword {
 
 #[derive(Debug, Clone)]
 pub struct PasswordData {
-    password_hash: String,
-    salt: String,
+    pub password_hash: String,
+    pub salt: Secret<String>,
 }
 
 impl PasswordData {
-    pub fn get_password_hash(&self) -> &str {
-        &self.password_hash
-    }
-
-    pub fn get_salt(&self) -> &str {
-        &self.salt
-    }
-
-    pub fn generate(password: &String) -> Result<Self, DomainError> {
-        let argon = Argon2::default();
-        let salt = SaltString::generate(&mut OsRng);
-
-        match argon.hash_password(
-            password.as_bytes(),
-            salt.as_ref()
-        ) {
-            Ok(result) => {
-                let output = match result.hash {
-                    Some(result) => result,
-                    None => {
-                        tracing::error!("Password hash is null");
-                        return Err(DomainError::HashingError)
-                    }
-                };
-                Ok( PasswordData {
-                    password_hash: base64::encode(output.as_bytes()),
-                    salt: salt.as_str().to_string(),
-                })
-            },
-            Err(e) => {
-                tracing::error!("Password hash generation error - {:?}", e.to_string());
-                return Err(DomainError::HashingError)
-            }
-        }
-    }
-
-    pub fn check_password(password: &str, salt: &str, password_hash: &str) -> Result<(), DomainError> {
-        let argon = Argon2::default();
-
-        return match argon.hash_password(
-            password.as_bytes(),
-            salt
-        ) {
-            Ok(result) => {
-                let output = match result.hash {
-                    Some(result) => result,
-                    None => {
-                        tracing::error!("Password hash for check is null");
-                        return Err(DomainError::HashingError)
-                    }
-                };
-                if base64::encode(output.as_bytes()) == password_hash { return Ok(()) };
-                tracing::error!("{:?}", DomainError::PasswordNotCorrect);
-                Err(DomainError::PasswordNotCorrect)
-            },
-            Err(e) => {
-                tracing::error!(
-                    "Password hash generation for check returned error - {:?}",
-                    e.to_string()
-                );
-                tracing::error!("{:?}", DomainError::HashingError);
-                Err(DomainError::HashingError)
-            }
-        }
+    pub fn expose_salt_secret(&self) -> &str {
+        self.salt.expose_secret()
     }
 }

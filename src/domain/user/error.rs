@@ -9,6 +9,6 @@ pub enum DomainError {
     LoginIsNotCorrect,
     #[error("Password is not correct.")]
     PasswordNotCorrect,
-    #[error("Something went wrong during hashing.")]
-    HashingError
+    #[error("Something went wrong")]
+    UnexpectedError,
 }

@@ -7,8 +7,8 @@ pub enum AuthenticationError {
     PasswordNotCorrect,
     #[error("User not exist")]
     UserNotExist,
-    #[error(transparent)]
-    UnexpectedError(#[from] anyhow::Error),
+    #[error("Something went wrong")]
+    UnexpectedError,
 }
 
 impl ResponseError for AuthenticationError {
@@ -16,7 +16,7 @@ impl ResponseError for AuthenticationError {
         match self {
             AuthenticationError::PasswordNotCorrect => StatusCode::CONFLICT,
             AuthenticationError::UserNotExist => StatusCode::CONFLICT,
-            AuthenticationError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AuthenticationError::UnexpectedError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

@@ -5,6 +5,7 @@ use crate::route::dto::auth_response::AuthResponse;
 use crate::auth_token::token;
 use crate::repository::authentication::check_user;
 use crate::configuration::Config;
+use crate::password_manager::manager::check_password;
 
 use actix_web::{HttpResponse, web};
 use actix_web::http::header::HeaderValue;
@@ -37,10 +38,10 @@ pub async fn authentication(
         .map_err(|e| {
         match e {
             sqlx::Error::RowNotFound => { error::AuthenticationError::UserNotExist }
-            _ => { error::AuthenticationError::UnexpectedError(anyhow::Error::from(e)) }
+            _ => { error::AuthenticationError::UnexpectedError }
         }
     })?;
-    PasswordData::check_password(
+    check_password(
         form.get_password(),
         user.get_salt(),
         user.get_password_hash()
@@ -50,7 +51,7 @@ pub async fn authentication(
     })?;
 
     let config = Config::load().map_err(|e|
-        error::AuthenticationError::UnexpectedError(anyhow::Error::from(e))
+        error::AuthenticationError::UnexpectedError
     )?;
 
     let token = token::new_token(
@@ -58,7 +59,7 @@ pub async fn authentication(
         config.authentication.token_duration_in_days
     )
         .map_err(|e|
-            error::AuthenticationError::UnexpectedError(anyhow::Error::from(e))
+            error::AuthenticationError::UnexpectedError
         )?;
 
     let response = AuthResponse::new(user.get_id().to_string(), token);

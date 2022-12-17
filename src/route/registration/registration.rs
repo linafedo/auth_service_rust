@@ -41,7 +41,7 @@ pub async fn registration(
                     RegistrationError::AlreadyExist
                 }
                 _ => {
-                    RegistrationError::UnexpectedError(anyhow::Error::from(e))
+                    RegistrationError::UnexpectedError
                 }
             }
         })?;

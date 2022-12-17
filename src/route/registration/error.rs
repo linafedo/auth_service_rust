@@ -17,8 +17,8 @@ pub enum RegistrationError {
     LoginIsNotCorrect,
     #[error("Login should be not empty")]
     LoginIsEmpty,
-    #[error(transparent)]
-    UnexpectedError(#[from] anyhow::Error),
+    #[error("Something went wrong")]
+    UnexpectedError,
 }
 
 impl RegistrationError {
@@ -39,7 +39,7 @@ impl ResponseError for RegistrationError {
             RegistrationError::LoginLengthIsWrong => StatusCode::BAD_REQUEST,
             RegistrationError::LoginIsNotCorrect => StatusCode::BAD_REQUEST,
             RegistrationError::LoginIsEmpty => StatusCode::BAD_REQUEST,
-            RegistrationError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            RegistrationError::UnexpectedError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -59,8 +59,8 @@ impl From<DomainError> for RegistrationError {
             DomainError::PasswordNotCorrect=> {
                 RegistrationError::PasswordNotCorrect
             }
-            DomainError::HashingError=> {
-                RegistrationError::UnexpectedError(anyhow::Error::from(domain_error))
+            DomainError::UnexpectedError=> {
+                RegistrationError::UnexpectedError
             }
         }
     }
