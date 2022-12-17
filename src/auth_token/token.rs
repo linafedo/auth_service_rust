@@ -12,19 +12,20 @@ use std::fs;
 
 
 #[derive(Default, Deserialize, Serialize)]
-struct Custom {
+struct TokenData {
     user_id: String,
-    expiration: i64,
+    expiration_timestamp: i64,
 }
 
-pub fn new_token(user_id: &str) -> Result<String, TokenError> {
+pub fn new_token(user_id: &str, duration_in_days: i64) -> Result<String, TokenError> {
     // header
     let header: Header = Default::default();
     // claims
-    let expiration_time = chrono::Utc::now() + Duration::days(1);
-    let claims = Custom {
+    let expiration_time = chrono::Utc::now() + Duration::days(duration_in_days);
+
+    let claims = TokenData {
         user_id: user_id.into(),
-        expiration: expiration_time.timestamp(),
+        expiration_timestamp: expiration_time.timestamp(),
     };
     // key
     let secret_key = read_or_generate_secret_key()?;
@@ -45,7 +46,7 @@ pub fn verify_token(token: &str) -> Result<(), TokenError> {
                 tracing::error!("Error generating new secret key {}", e.to_string());
                 TokenError::GenerateKeyError(e.to_string())
             })?;
-            let _token: Token<Header, Custom, _> = VerifyWithKey::verify_with_key(token, &generated_key).map_err(|_| {
+            let _token: Token<Header, TokenData, _> = VerifyWithKey::verify_with_key(token, &generated_key).map_err(|_| {
                 tracing::error!("Error verify token");
                 TokenError::VerifyTokenError
             })?;

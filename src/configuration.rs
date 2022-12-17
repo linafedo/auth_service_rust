@@ -24,11 +24,17 @@ pub struct DatabaseSettings {
 pub struct Config {
     pub application: AppConfig,
     pub database: DatabaseSettings,
+    pub authentication: Authentication,
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Log {
     pub level: Option<Level>
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Authentication {
+    pub token_duration_in_days: i64
 }
 
 impl Config {

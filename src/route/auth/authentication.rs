@@ -4,6 +4,7 @@ use crate::route::dto::auth_data::AuthData;
 use crate::route::dto::auth_response::AuthResponse;
 use crate::auth_token::token;
 use crate::repository::authentication::check_user;
+use crate::configuration::Config;
 
 use actix_web::{HttpResponse, web};
 use actix_web::http::header::HeaderValue;
@@ -48,7 +49,14 @@ pub async fn authentication(
         error::AuthenticationError::PasswordNotCorrect
     })?;
 
-    let token = token::new_token(user.get_id().to_string().as_str())
+    let config = Config::load().map_err(|e|
+        error::AuthenticationError::UnexpectedError(anyhow::Error::from(e))
+    )?;
+
+    let token = token::new_token(
+        user.get_id().to_string().as_str(),
+        config.authentication.token_duration_in_days
+    )
         .map_err(|e|
             error::AuthenticationError::UnexpectedError(anyhow::Error::from(e))
         )?;

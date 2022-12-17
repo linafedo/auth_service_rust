@@ -9,3 +9,5 @@ database:
   database_name: users
   port: 5432
   host: 127.0.0.1
+authentication:
+  token_duration_in_days: 1
