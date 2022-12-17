@@ -1,9 +1,9 @@
 use crate::domain::user::user_data::PasswordData;
 use crate::route::auth::error;
-use crate::domain::user::auth_user::AuthUser;
 use crate::route::dto::auth_data::AuthData;
 use crate::route::dto::auth_response::AuthResponse;
 use crate::auth_token::token;
+use crate::repository::authentication::check_user;
 
 use actix_web::{HttpResponse, web};
 use actix_web::http::header::HeaderValue;
@@ -55,26 +55,4 @@ pub async fn authentication(
 
     let response = AuthResponse::new(user.get_id().to_string(), token);
     Ok(HttpResponse::Created().json(response))
-}
-
-#[tracing::instrument(
-    name = "Check user in the database",
-    skip(user, pg_pool)
-)]
-async fn check_user(
-    user: &AuthData,
-    pg_pool: web::Data<PgPool>) -> Result<AuthUser, sqlx::Error> {
-    let result = sqlx::query!(
-        r#"
-        SELECT id, login, password_hash, salt FROM users WHERE login = $1
-        "#,
-        user.get_login(),
-    )
-        .fetch_one(pg_pool.get_ref())
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to execute query: {:?}", e);
-            e
-        })?;
-    Ok(AuthUser::new(result.id, result.login, result.password_hash, result.salt))
 }
