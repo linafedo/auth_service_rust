@@ -2,14 +2,9 @@ use std::fmt::Debug;
 
 #[derive(thiserror::Error, Debug)]
 pub enum TokenError {
-    WrongFileLength,
-    DecodeSecretError(String),
-    FileWithSecretNotFound(String),
-    CreateFileForSecretError(String),
-    WriteSecretToFileError(String),
-    GenerateKeyError(String),
-    SignTokenError(String),
     VerifyTokenError,
+    FileWithSecretNotFound,
+    UnexpectedError,
 }
 
 impl std::fmt::Display for TokenError {
