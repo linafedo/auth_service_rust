@@ -30,7 +30,7 @@ pub fn create_logger(
 
     let env_filter = EnvFilter::new(level_str);
 
-    let log_file = rolling::minutely("./logs", "log");
+    let log_file = rolling::hourly("./logs", "log");
     let (non_blocking, _guard) = tracing_appender::non_blocking(log_file);
     let registry = Registry::default()
         .with(env_filter)
