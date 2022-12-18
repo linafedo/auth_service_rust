@@ -1,13 +1,10 @@
 use tracing::{Subscriber};
 use tracing::subscriber::set_global_default;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
-use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry, Layer};
-use tracing_subscriber::fmt::{writer::MakeWriterExt};
+use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 use tracing_log::LogTracer;
 use tracing_appender::rolling;
-use std::{fs::File, sync::Arc, fmt, io::stdout};
 use serde::{Deserialize, Serialize};
-use tracing::metadata::LevelFilter;
 use tracing_appender::non_blocking::WorkerGuard;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]

@@ -9,6 +9,7 @@ use rand_core::{OsRng, RngCore};
 use sha2::Sha256;
 use std::io::Write;
 use std::fs;
+use uuid::Uuid;
 
 
 #[derive(Default, Deserialize, Serialize)]
@@ -17,14 +18,14 @@ struct TokenData {
     expiration_timestamp: i64,
 }
 
-pub fn new_token(user_id: &str, duration_in_days: i64) -> Result<String, TokenError> {
+pub fn new_token(user_id: Uuid, duration_in_days: i64) -> Result<String, TokenError> {
     // header
     let header: Header = Default::default();
     // claims
     let expiration_time = chrono::Utc::now() + Duration::days(duration_in_days);
 
     let claims = TokenData {
-        user_id: user_id.into(),
+        user_id: user_id.to_string(),
         expiration_timestamp: expiration_time.timestamp(),
     };
     // key
@@ -52,12 +53,12 @@ pub fn verify_token(token: &str) -> Result<(), TokenError> {
             })?;
             Ok(())
         }
-        Err(e) => Err(TokenError::UnexpectedError)
+        Err(_) => Err(TokenError::UnexpectedError)
     }
 }
 
 fn read_or_generate_secret_key() -> Result<Hmac<Sha256>, TokenError> {
-    if let secret = read_secret_from_file()? {
+    if let Ok(secret) = read_secret_from_file() {
         let key = Hmac::new_from_slice(&secret).map_err(|e| {
             tracing::error!("Error generating new secret key {}", e.to_string());
             TokenError::UnexpectedError

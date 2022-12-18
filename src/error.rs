@@ -5,7 +5,6 @@ use actix_web::http::header::{ContentType, HeaderValue};
 use actix_web::http::{header, StatusCode};
 use actix_web::middleware::{ErrorHandlerResponse, ErrorHandlers};
 use actix_web::web::Bytes;
-use actix_web::{dev, web, App, HttpResponse, Result};
 
 pub fn error_to_json_handler<B: 'static>() -> ErrorHandlers<B> {
     ErrorHandlers::new()

@@ -1,7 +1,5 @@
 use actix_web::http::StatusCode;
-use actix_web::{HttpResponse, ResponseError};
-use actix_web::body::BoxBody;
-use sqlx::Error;
+use actix_web::ResponseError;
 use crate::domain::user::error::DomainError;
 use crate::route::dto;
 

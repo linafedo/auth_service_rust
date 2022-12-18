@@ -15,7 +15,7 @@ pub async fn check_user(
         r#"
         SELECT id, login, password_hash, salt FROM users WHERE login = $1
         "#,
-        user.get_login(),
+        user.login,
     )
         .fetch_one(pg_pool.get_ref())
         .await

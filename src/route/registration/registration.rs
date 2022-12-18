@@ -5,7 +5,6 @@ use crate::domain::user::new_user::NewUser;
 use crate::repository::registration::insert_user;
 use actix_web::{HttpResponse, web};
 use sqlx::{Error, PgPool};
-use uuid::Uuid;
 use tracing::{instrument};
 use utoipa;
 use serde_json::json;
@@ -24,7 +23,7 @@ use serde_json::json;
 #[instrument(
     name = "Adding a new user",
     skip(form, pg_pool),
-    fields(user_login = form.get_login())
+    fields(user_login = form.login)
 )]
 pub async fn registration(
     form: web::Json<AuthData>,

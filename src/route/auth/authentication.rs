@@ -1,4 +1,3 @@
-use crate::domain::user::user_data::PasswordData;
 use crate::route::auth::error;
 use crate::route::dto::auth_data::AuthData;
 use crate::route::dto::auth_response::AuthResponse;
@@ -8,8 +7,6 @@ use crate::configuration::Config;
 use crate::password_manager::manager::check_password;
 
 use actix_web::{HttpResponse, web};
-use actix_web::http::header::HeaderValue;
-use actix_web::http::StatusCode;
 use sqlx::{PgPool};
 use tracing::instrument;
 use utoipa;
@@ -27,7 +24,7 @@ use utoipa;
 #[instrument(
     name = "User authentication",
     skip(form, pg_pool),
-    fields(user_login = form.get_login())
+    fields(user_login = form.login)
 )]
 pub async fn authentication(
     form: web::Json<AuthData>,
@@ -42,26 +39,26 @@ pub async fn authentication(
         }
     })?;
     check_password(
-        form.get_password(),
+        form.password.as_str(),
         user.get_salt(),
-        user.get_password_hash()
+        user.password_hash.as_str()
 
     ).map_err(|_| {
         error::AuthenticationError::PasswordNotCorrect
     })?;
 
-    let config = Config::load().map_err(|e|
+    let config = Config::load().map_err(|_|
         error::AuthenticationError::UnexpectedError
     )?;
 
     let token = token::new_token(
-        user.get_id().to_string().as_str(),
+        user.id,
         config.authentication.token_duration_in_days
     )
-        .map_err(|e|
+        .map_err(|_|
             error::AuthenticationError::UnexpectedError
         )?;
 
-    let response = AuthResponse::new(user.get_id().to_string(), token);
+    let response = AuthResponse::new(user.id.to_string(), token);
     Ok(HttpResponse::Created().json(response))
 }

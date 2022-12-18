@@ -1,9 +1,7 @@
 use crate::domain::user::new_user::NewUser;
 use sqlx::{Error, PgPool};
 use actix_web::web;
-use secrecy::ExposeSecret;
 use uuid::Uuid;
-
 
 #[tracing::instrument(
 name = "Saving new user in the database",
