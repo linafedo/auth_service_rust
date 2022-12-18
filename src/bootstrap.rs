@@ -37,7 +37,15 @@ impl Application {
                 .wrap(TracingLogger::default())
                 .wrap(error_to_json_handler())
                 .service(
-                    web::scope("api/v1")
+                    SwaggerUi::new(
+                        "/swagger/{_:.*}")
+                        .url(
+                            "/api-doc/openapi.json",
+                            open_api.clone()
+                        )
+                )
+                .service(
+                    web::scope("auth_service/v1")
                         .route(
                             "/registration",
                             web::post().to(registration),
@@ -45,14 +53,6 @@ impl Application {
                         .route(
                             "/authentication",
                             web::get().to(authentication),
-                        )
-                )
-                .service(
-                    SwaggerUi::new(
-                        "/swagger/{_:.*}")
-                        .url(
-                            "/api-doc/openapi.json",
-                            open_api.clone()
                         )
                 )
                 .app_data(connection.clone())
@@ -63,7 +63,7 @@ impl Application {
     }
 
     pub async fn run(self) -> Result<(), std::io::Error> {
-        println!("Running application");
+        // todo: add telemetry
         self.server.await
     }
 
