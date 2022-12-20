@@ -11,11 +11,16 @@ use std::io::Write;
 use std::fs;
 use uuid::Uuid;
 use tracing::instrument;
+use secrecy::{ExposeSecret, Secret};
 
 #[derive(Default, Deserialize, Serialize)]
 struct TokenData {
     user_id: String,
     expiration_timestamp: i64,
+}
+
+pub struct SecretKey {
+    value: Secret<[u8; 64]>
 }
 
 #[instrument(
@@ -37,7 +42,6 @@ pub fn new_token(user_id: Uuid, duration_in_days: i64) -> Result<String, TokenEr
 
     let unsigned_token = Token::new(header, claims);
     let signed_token = unsigned_token.sign_with_key(&secret_key).map_err(|e| {
-        tracing::error!("Error signing token with secret key {}", e.to_string());
         TokenError::UnexpectedError
     })?;
     Ok(signed_token.into())
@@ -52,7 +56,8 @@ pub fn new_token(user_id: Uuid, duration_in_days: i64) -> Result<String, TokenEr
 pub fn verify_token(token: &str) -> Result<(), TokenError> {
     match read_secret_from_file() {
         Ok(secret) => {
-            let generated_key: Hmac<Sha256> = Hmac::new_from_slice(&secret).map_err(|e| {
+            let generated_key: Hmac<Sha256> = Hmac::new_from_slice(secret.value.expose_secret())
+                .map_err(|e| {
                 TokenError::UnexpectedError
             })?;
             VerifyWithKey::verify_with_key(token, &generated_key).map_err(|_| {
@@ -66,8 +71,8 @@ pub fn verify_token(token: &str) -> Result<(), TokenError> {
 
 fn read_or_generate_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     if let Ok(secret) = read_secret_from_file() {
-        let key = Hmac::new_from_slice(&secret).map_err(|e| {
-            tracing::error!("Error generating new secret key {}", e.to_string());
+        let key = Hmac::new_from_slice(secret.value.expose_secret())
+            .map_err(|e| {
             TokenError::UnexpectedError
         })?;
         Ok(key)
@@ -84,11 +89,13 @@ fn create_and_save_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     let mut key: [u8; 64] = [0; 64];
     let mut default = OsRng::default();
     default.fill_bytes(&mut key);
+    let secret_key = SecretKey{value: Secret::new(key)};
 
-    let generated_key: Hmac<Sha256> = Hmac::new_from_slice(&key).map_err(|e| {
+    let generated_key: Hmac<Sha256> = Hmac::new_from_slice(secret_key.value.expose_secret())
+        .map_err(|e| {
         TokenError::UnexpectedError
     })?;
-    save_secret(&key).map_err(|_| TokenError::UnexpectedError)?;
+    save_secret(secret_key).map_err(|_| TokenError::UnexpectedError)?;
     Ok(generated_key)
 }
 
@@ -97,12 +104,12 @@ fn create_and_save_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     skip(secret),
     err
 )]
-fn save_secret(secret: &[u8]) -> Result<(), TokenError> {
+fn save_secret(secret: SecretKey) -> Result<(), TokenError> {
     let mut file = fs::File::create_new("token_secret.txt").map_err(|e| {
         return TokenError::UnexpectedError
     })?;
 
-    let secret = base64::encode(secret);
+    let secret = base64::encode(secret.value.expose_secret());
     file.write(&secret.as_bytes()).map_err(|e| {
         return TokenError::UnexpectedError
     })?;
@@ -113,9 +120,8 @@ fn save_secret(secret: &[u8]) -> Result<(), TokenError> {
     name = "Reading of secret from file",
     err
 )]
-fn read_secret_from_file() -> Result<[u8; 64], TokenError> {
+fn read_secret_from_file() -> Result<SecretKey, TokenError> {
     let result = fs::read_to_string("token_secret.txt").map_err(|e| {
-        tracing::error!("Error decoding secret {}", e.to_string());
         TokenError::UnexpectedError
     })?;
     handle_result(result)
@@ -126,7 +132,7 @@ fn read_secret_from_file() -> Result<[u8; 64], TokenError> {
     skip(result),
     err
 )]
-fn handle_result(result: String) -> Result<[u8; 64], TokenError> {
+fn handle_result(result: String) -> Result<SecretKey, TokenError> {
     let mut decoded_result: [u8; 64] = [0; 64];
     base64::decode_config_slice(
         &result,
@@ -136,9 +142,9 @@ fn handle_result(result: String) -> Result<[u8; 64], TokenError> {
         TokenError::UnexpectedError
     })?;
 
-    if decoded_result.len() == 64 {
-        Ok(decoded_result)
-    } else {
+    // if decoded_result.len() == 64 {
+    //     Ok(SecretKey{ value: Secret::new(decoded_result) })
+    // } else {
         Err(TokenError::UnexpectedError)
-    }
+    // }
 }
