@@ -6,14 +6,14 @@ use unicode_segmentation::UnicodeSegmentation;
 use tracing::instrument;
 
 #[derive(Debug)]
-pub struct UserLogin(String);
+pub struct Login(String);
 
-impl UserLogin {
+impl Login {
     #[instrument(
         name = "Parsing user login from passed data",
         err
     )]
-    pub fn parse(string: String) -> Result<UserLogin, DomainError> {
+    pub fn parse(string: String) -> Result<Login, DomainError> {
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}', '-'];
         let contains_forbidden_characters = string
             .chars()
@@ -29,32 +29,32 @@ impl UserLogin {
         if contains_forbidden_characters {
             return Err(DomainError::LoginIsNotCorrect)
         }
-        Ok(UserLogin{ 0: string })
+        Ok(Login { 0: string })
     }
 }
 
-impl AsRef<str> for UserLogin {
+impl AsRef<str> for Login {
     fn as_ref(&self) -> &str {
         &self.0
     }
 }
 
 #[derive(Debug)]
-pub struct UserPassword(Secret<String>);
+pub struct Password(Secret<String>);
 
-impl UserPassword {
+impl Password {
     #[instrument(
         name = "Parsing password from passed data",
         skip(string),
         err
     )]
-    pub fn parse(string: String) -> Result<UserPassword, DomainError> {
+    pub fn parse(string: String) -> Result<Password, DomainError> {
         if string.trim().is_empty()
             || string.graphemes(true).count() < utils::MIN_PASSWORD_LENGTH
             || string.graphemes(true).count() > utils::MAX_PASSWORD_LENGTH {
             return Err(DomainError::PasswordNotCorrect)
         }
-        Ok(UserPassword { 0: Secret::new(string) })
+        Ok(Password { 0: Secret::new(string) })
     }
 
     pub fn expose_secret(&self) -> &str {
@@ -62,7 +62,7 @@ impl UserPassword {
     }
 }
 
-impl AsRef<str> for UserPassword {
+impl AsRef<str> for Password {
     fn as_ref(&self) -> &str {
         &self.0.expose_secret()
     }

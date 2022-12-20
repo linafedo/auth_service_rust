@@ -2,19 +2,19 @@
 mod login_tests {
     use claim::{assert_ok};
     use auth_service::domain::user::error::DomainError;
-    use auth_service::domain::user::new_user::UserLogin;
+    use auth_service::domain::user::new_user::Login;
 
     #[test]
     fn login_length_is_valid() {
         let name = "a".repeat(256);
-        assert_ok!( UserLogin::parse(name));
+        assert_ok!( Login::parse(name));
     }
 
     #[test]
     fn login_length_is_wrong() {
         let items = ["a".repeat(258), "aa".to_string(), "a".to_string()];
         for i in items {
-            let result = UserLogin::parse(i);
+            let result = Login::parse(i);
             assert_eq!( result.err().unwrap(), DomainError::LoginLengthIsWrong);
         }
     }
@@ -31,7 +31,7 @@ mod login_tests {
             "\\Alex-",
         ];
         for i in items {
-            let result = UserLogin::parse(i.to_string());
+            let result = Login::parse(i.to_string());
             assert_eq!( result.err().unwrap(), DomainError::LoginIsNotCorrect);
         }
     }
@@ -40,7 +40,7 @@ mod login_tests {
     fn login_is_empty() {
         let items = ["", " "];
         for i in items {
-            let result = UserLogin::parse(i.to_string());
+            let result = Login::parse(i.to_string());
             assert_eq!( result.err().unwrap(), DomainError::LoginIsEmpty);
         }
     }
@@ -49,14 +49,14 @@ mod login_tests {
 #[cfg(test)]
 mod password_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::domain::user::new_user::{UserLogin, UserPassword, PasswordData};
+    use auth_service::domain::user::new_user::{Login, Password, PasswordData};
     use auth_service::domain::user::error::DomainError;
     use auth_service::route::dto::auth_data::NewUser;
 
     #[test]
     fn password_is_correct() {
         let password = "a".repeat(256);
-        assert_ok!( UserPassword::parse(password));
+        assert_ok!( Password::parse(password));
     }
 
     #[test]
@@ -67,17 +67,17 @@ mod password_tests {
             "a".repeat(257)
         ];
         for i in items {
-            let result = UserPassword::parse(i);
+            let result = Password::parse(i);
             assert_eq!( result.err().unwrap(), DomainError::PasswordNotCorrect);
         }
     }
 
     #[test]
     fn return_valid_password_fields() {
-        let login = UserLogin::parse("Alex".to_string()).unwrap();
+        let login = Login::parse("Alex".to_string()).unwrap();
         let password_str = "123456";
-        let password = UserPassword::parse(password_str.to_string()).unwrap();
-        let password2 = UserPassword::parse(password_str.to_string()).unwrap();
+        let password = Password::parse(password_str.to_string()).unwrap();
+        let password2 = Password::parse(password_str.to_string()).unwrap();
         let password_data = PasswordData::generate(password.expose_secret()).unwrap();
 
         let user = NewUser::new(login, password, password_data);
@@ -90,14 +90,14 @@ mod password_tests {
 #[cfg(test)]
 mod password_data_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::domain::user::new_user::{UserLogin, UserPassword, PasswordData};
+    use auth_service::domain::user::new_user::{Login, Password, PasswordData};
     use auth_service::domain::user::error::DomainError;
     use auth_service::route::dto::auth_data::NewUser;
 
     #[test]
     fn return_valid_password_data_fields() {
-        let login = UserLogin::parse("Alex".to_string()).unwrap();
-        let password = UserPassword::parse( "123456".to_string()).unwrap();
+        let login = Login::parse("Alex".to_string()).unwrap();
+        let password = Password::parse( "123456".to_string()).unwrap();
         let password_data = PasswordData::generate(password.expose_secret()).unwrap();
         let password_data_clone = password_data.clone();
 
@@ -109,9 +109,9 @@ mod password_data_tests {
 
     #[test]
     fn check_password_success() {
-        let login = UserLogin::parse("Alex".to_string()).unwrap();
+        let login = Login::parse("Alex".to_string()).unwrap();
         let password_str = "123456";
-        let password = UserPassword::parse( password_str.to_string()).unwrap();
+        let password = Password::parse( password_str.to_string()).unwrap();
         let password_data = PasswordData::generate(password.expose_secret()).unwrap();
         let password_data_clone = password_data.clone();
 
@@ -127,9 +127,9 @@ mod password_data_tests {
 
     #[test]
     fn check_password_fail() {
-        let login = UserLogin::parse("Alex".to_string()).unwrap();
+        let login = Login::parse("Alex".to_string()).unwrap();
         let password_str = "123456";
-        let password = UserPassword::parse( password_str.to_string()).unwrap();
+        let password = Password::parse( password_str.to_string()).unwrap();
         let password_data = PasswordData::generate(password.expose_secret()).unwrap();
         let password_data_clone = password_data.clone();
 
