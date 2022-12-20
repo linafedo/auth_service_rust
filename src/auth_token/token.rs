@@ -142,9 +142,9 @@ fn handle_result(result: String) -> Result<SecretKey, TokenError> {
         TokenError::UnexpectedError
     })?;
 
-    // if decoded_result.len() == 64 {
-    //     Ok(SecretKey{ value: Secret::new(decoded_result) })
-    // } else {
+    if decoded_result.len() == 64 {
+        Ok(SecretKey{ value: Secret::new(decoded_result) })
+    } else {
         Err(TokenError::UnexpectedError)
-    // }
+    }
 }
