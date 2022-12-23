@@ -1,4 +1,4 @@
-use crate::route::auth::error;
+use crate::route::auth::error::AuthenticationError;
 use crate::route::dto::auth_data::AuthData;
 use crate::route::dto::auth_response::AuthResponse;
 use crate::auth_token::token;
@@ -29,13 +29,13 @@ use utoipa;
 pub async fn authentication(
     form: web::Json<AuthData>,
     pg_pool: web::Data<PgPool>
-) -> Result<HttpResponse, error::AuthenticationError> {
+) -> Result<HttpResponse, AuthenticationError> {
     let user = check_user(&form.0, pg_pool)
         .await
         .map_err(|e| {
         match e {
-            sqlx::Error::RowNotFound => { error::AuthenticationError::UserNotExist }
-            _ => { error::AuthenticationError::UnexpectedError }
+            sqlx::Error::RowNotFound => { AuthenticationError::UserNotExist }
+            _ => { AuthenticationError::UnexpectedError }
         }
     })?;
     check_password(
@@ -44,11 +44,11 @@ pub async fn authentication(
         user.password_hash.as_str()
 
     ).map_err(|_| {
-        error::AuthenticationError::PasswordNotCorrect
+        AuthenticationError::PasswordNotCorrect
     })?;
 
     let config = Config::load().map_err(|_|
-        error::AuthenticationError::UnexpectedError
+        AuthenticationError::UnexpectedError
     )?;
 
     let token = token::new_token(
@@ -56,7 +56,7 @@ pub async fn authentication(
         config.authentication.token_duration_in_days
     )
         .map_err(|_|
-            error::AuthenticationError::UnexpectedError
+            AuthenticationError::UnexpectedError
         )?;
 
     let response = AuthResponse::new(user.id.to_string(), token);

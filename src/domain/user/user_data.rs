@@ -1,9 +1,12 @@
 use crate::domain::user::error::DomainError;
-use crate::utils;
-
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
 use tracing::instrument;
+
+pub const MIN_PASSWORD_LENGTH: usize = 6;
+pub const MAX_PASSWORD_LENGTH: usize = 256;
+pub const MAX_LOGIN_LENGTH: usize = 256;
+pub const MIN_LOGIN_LENGTH: usize = 3;
 
 #[derive(Debug)]
 pub struct Login(String);
@@ -22,8 +25,8 @@ impl Login {
         if string.trim().is_empty() {
             return Err(DomainError::LoginIsEmpty)
         }
-        if string.graphemes(true).count() > utils::MAX_LOGIN_LENGTH
-            || string.graphemes(true).count() < utils::MIN_LOGIN_LENGTH {
+        if string.graphemes(true).count() > MAX_LOGIN_LENGTH
+            || string.graphemes(true).count() < MIN_LOGIN_LENGTH {
             return Err(DomainError::LoginLengthIsWrong)
         }
         if contains_forbidden_characters {
@@ -50,8 +53,8 @@ impl Password {
     )]
     pub fn parse(string: String) -> Result<Password, DomainError> {
         if string.trim().is_empty()
-            || string.graphemes(true).count() < utils::MIN_PASSWORD_LENGTH
-            || string.graphemes(true).count() > utils::MAX_PASSWORD_LENGTH {
+            || string.graphemes(true).count() < MIN_PASSWORD_LENGTH
+            || string.graphemes(true).count() > MAX_PASSWORD_LENGTH {
             return Err(DomainError::PasswordNotCorrect)
         }
         Ok(Password { 0: Secret::new(string) })
