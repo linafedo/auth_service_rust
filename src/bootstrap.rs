@@ -15,7 +15,7 @@ use utoipa::OpenApi;
 
 pub struct Application {
     server: Server,
-    port: u16
+    config: Config
 }
 
 impl Application {
@@ -27,7 +27,7 @@ impl Application {
         let connection = web::Data::new(pg_pool);
 
         let listener = TcpListener::bind(
-            (config.application.host, config.application.port)
+            (config.application.host.clone(), config.application.port.clone())
         )?;
         let port = listener.local_addr().unwrap().port();
         let open_api = ServiceApiDoc::openapi();
@@ -59,15 +59,11 @@ impl Application {
         })
             .listen(listener)?
             .run();
-        Ok(Self {server, port})
+        Ok(Self {server, config})
     }
 
     pub async fn run(self) -> Result<(), std::io::Error> {
         // todo: add telemetry
         self.server.await
-    }
-
-    pub fn port(&self) -> u16 {
-        self.port
     }
 }
