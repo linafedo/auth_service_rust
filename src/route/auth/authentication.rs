@@ -24,7 +24,8 @@ use utoipa;
 #[instrument(
     name = "User authentication",
     skip(form, pg_pool),
-    fields(user_login = form.login)
+    fields(user_login = form.login),
+    err
 )]
 pub async fn authentication(
     form: web::Json<AuthData>,

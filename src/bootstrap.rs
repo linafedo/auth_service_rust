@@ -12,10 +12,21 @@ use sqlx::PgPool;
 use tracing_actix_web::TracingLogger;
 use utoipa_swagger_ui::SwaggerUi;
 use utoipa::OpenApi;
+use tracing::instrument;
+use std::fmt::{Debug, Formatter};
 
 pub struct Application {
     server: Server,
     config: Config
+}
+
+impl Debug for Application {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Server with host - {}, and port - {}",
+               self.config.application.host,
+               self.config.application.port
+        )
+    }
 }
 
 impl Application {
@@ -29,7 +40,6 @@ impl Application {
         let listener = TcpListener::bind(
             (config.application.host.clone(), config.application.port.clone())
         )?;
-        let port = listener.local_addr().unwrap().port();
         let open_api = ServiceApiDoc::openapi();
 
         let server = HttpServer::new(move || {
@@ -62,8 +72,11 @@ impl Application {
         Ok(Self {server, config})
     }
 
+    #[instrument(
+        name = "Run application",
+        err
+    )]
     pub async fn run(self) -> Result<(), std::io::Error> {
-        // todo: add telemetry
         self.server.await
     }
 }

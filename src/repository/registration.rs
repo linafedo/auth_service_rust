@@ -4,8 +4,9 @@ use actix_web::web;
 use uuid::Uuid;
 
 #[tracing::instrument(
-name = "Saving new user in the database",
-skip(user, pg_pool)
+    name = "Saving new user in the database",
+    skip(user, pg_pool),
+    err
 )]
 pub async fn insert_user(
     user: &NewUser,

@@ -5,8 +5,9 @@ use actix_web::web;
 use tracing::instrument;
 
 #[instrument(
-name = "Check user in the database",
-skip(user, pg_pool)
+    name = "Check user in the database",
+    skip(user, pg_pool),
+    err
 )]
 pub async fn check_user(
     user: &AuthData,

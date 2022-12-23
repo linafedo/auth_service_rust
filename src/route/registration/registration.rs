@@ -23,7 +23,8 @@ use serde_json::json;
 #[instrument(
     name = "Adding a new user",
     skip(form, pg_pool),
-    fields(user_login = form.login)
+    fields(user_login = form.login),
+    err
 )]
 pub async fn registration(
     form: web::Json<AuthData>,
