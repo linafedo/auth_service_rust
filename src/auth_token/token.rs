@@ -41,7 +41,7 @@ pub fn new_token(user_id: Uuid, duration_in_days: i64) -> Result<String, TokenEr
     let secret_key = read_or_generate_secret_key()?;
 
     let unsigned_token = Token::new(header, claims);
-    let signed_token = unsigned_token.sign_with_key(&secret_key).map_err(|e| {
+    let signed_token = unsigned_token.sign_with_key(&secret_key).map_err(|_| {
         TokenError::UnexpectedError
     })?;
     Ok(signed_token.into())
@@ -57,7 +57,7 @@ pub fn verify_token(token: &str) -> Result<(), TokenError> {
     match read_secret_from_file() {
         Ok(secret) => {
             let generated_key: Hmac<Sha256> = Hmac::new_from_slice(secret.value.expose_secret())
-                .map_err(|e| {
+                .map_err(|_| {
                 TokenError::UnexpectedError
             })?;
             VerifyWithKey::verify_with_key(token, &generated_key).map_err(|_| {
@@ -92,7 +92,7 @@ fn create_and_save_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     let secret_key = SecretKey{value: Secret::new(key)};
 
     let generated_key: Hmac<Sha256> = Hmac::new_from_slice(secret_key.value.expose_secret())
-        .map_err(|e| {
+        .map_err(|_| {
         TokenError::UnexpectedError
     })?;
     save_secret(secret_key).map_err(|_| TokenError::UnexpectedError)?;
@@ -105,12 +105,12 @@ fn create_and_save_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     err
 )]
 fn save_secret(secret: SecretKey) -> Result<(), TokenError> {
-    let mut file = fs::File::create_new("token_secret.txt").map_err(|e| {
+    let mut file = fs::File::create_new("token_secret.txt").map_err(|_| {
         return TokenError::UnexpectedError
     })?;
 
     let secret = base64::encode(secret.value.expose_secret());
-    file.write(&secret.as_bytes()).map_err(|e| {
+    file.write(&secret.as_bytes()).map_err(|_| {
         return TokenError::UnexpectedError
     })?;
     Ok(())
@@ -121,7 +121,7 @@ fn save_secret(secret: SecretKey) -> Result<(), TokenError> {
     err
 )]
 fn read_secret_from_file() -> Result<SecretKey, TokenError> {
-    let result = fs::read_to_string("token_secret.txt").map_err(|e| {
+    let result = fs::read_to_string("token_secret.txt").map_err(|_| {
         TokenError::UnexpectedError
     })?;
     handle_result(result)
@@ -138,7 +138,7 @@ fn handle_result(result: String) -> Result<SecretKey, TokenError> {
         &result,
         base64::STANDARD,
         &mut decoded_result
-    ).map_err( |e| {
+    ).map_err( |_| {
         TokenError::UnexpectedError
     })?;
 
