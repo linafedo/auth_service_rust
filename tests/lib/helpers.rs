@@ -7,12 +7,10 @@ use tokio;
 use uuid::Uuid;
 use sqlx::{PgConnection, Connection, PgPool, Executor};
 use once_cell::sync::Lazy;
-use std::io::{sink, stdout};
 use secrecy::ExposeSecret;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
     let name = "test".to_string();
-    let env_filter = "info".to_string();
 
     let (logger, _guard) = telemetry::create_logger(
         name,

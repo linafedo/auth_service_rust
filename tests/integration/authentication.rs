@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use reqwest::{Client, Response};
 use serde_json::Value;
 use crate::lib::helpers::spawn_app;

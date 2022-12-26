@@ -48,8 +48,8 @@ mod login_tests {
 
 #[cfg(test)]
 mod password_tests {
-    use claim::{assert_err, assert_ok};
-    use auth_service::domain::user::user_data::{Login, Password, PasswordData};
+    use claim::assert_ok;
+    use auth_service::domain::user::user_data::{Login, Password};
     use auth_service::domain::user::error::DomainError;
     use auth_service::domain::user::new_user::NewUser;
     use auth_service::password_manager::manager;
@@ -90,10 +90,9 @@ mod password_tests {
 
 #[cfg(test)]
 mod password_data_tests {
-    use claim::{assert_err, assert_ok};
+    use claim::assert_ok;
     use secrecy::ExposeSecret;
-    use sqlx::Encode;
-    use auth_service::domain::user::user_data::{Login, Password, PasswordData};
+    use auth_service::domain::user::user_data::{Login, Password};
     use auth_service::domain::user::error::DomainError;
     use auth_service::domain::user::new_user::NewUser;
     use auth_service::password_manager::manager;
@@ -104,7 +103,6 @@ mod password_data_tests {
         let password = Password::parse( "123456".to_string()).unwrap();
         let password_data = manager::generate(password.expose_secret()).unwrap();
         let password_data_clone = password_data.clone();
-
         let user = NewUser::new(login, password, password_data);
 
         assert_eq!(user.password_data.password_hash, password_data_clone.password_hash);
@@ -113,37 +111,29 @@ mod password_data_tests {
 
     #[test]
     fn check_password_success() {
-        let login = Login::parse("Alex".to_string()).unwrap();
         let password_str = "123456";
         let password = Password::parse( password_str.to_string()).unwrap();
         let password_data = manager::generate(password.expose_secret()).unwrap();
-        let password_data_clone = password_data.clone();
-
-        let user = NewUser::new(login, password, password_data);
 
         let result = manager::check_password(
             &password_str,
-            password_data_clone.salt.expose_secret().as_str(),
-            password_data_clone.password_hash.as_str()
+            password_data.salt.expose_secret().as_str(),
+            password_data.password_hash.as_str()
         );
         assert_ok!(result);
     }
 
     #[test]
     fn check_password_fail() {
-        let login = Login::parse("Alex".to_string()).unwrap();
         let password_str = "123456";
         let password = Password::parse( password_str.to_string()).unwrap();
         let password_data = manager::generate(password.expose_secret()).unwrap();
-        let password_data_clone = password_data.clone();
-
-        let user = NewUser::new(login, password, password_data);
 
         let wrong_password = "111111".to_string();
         let result = manager::check_password(
             &wrong_password,
-            password_data_clone.salt.expose_secret().as_str(),
-            password_data_clone.password_hash.as_str()
+            password_data.salt.expose_secret().as_str(),
+            password_data.password_hash.as_str()
         );
         assert_eq!( result.err().unwrap(), DomainError::PasswordNotCorrect);
     }

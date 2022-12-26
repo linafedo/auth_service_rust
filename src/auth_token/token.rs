@@ -72,7 +72,7 @@ pub fn verify_token(token: &str) -> Result<(), TokenError> {
 fn read_or_generate_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     if let Ok(secret) = read_secret_from_file() {
         let key = Hmac::new_from_slice(secret.value.expose_secret())
-            .map_err(|e| {
+            .map_err(|_| {
             TokenError::UnexpectedError
         })?;
         Ok(key)

@@ -18,7 +18,7 @@ pub fn generate(password: &str) -> Result<PasswordData, DomainError> {
     let hash_password = argon.hash_password(
         password.as_bytes(),
         salt.as_ref()
-    ).map_err(|e| {
+    ).map_err(|_| {
         DomainError::UnexpectedError
     })?;
 
@@ -42,7 +42,7 @@ pub fn check_password(password: &str, salt: &str, password_hash: &str) -> Result
     let hash_password = argon.hash_password(
         password.as_bytes(),
         salt
-    ).map_err(|e| {
+    ).map_err(|_| {
         DomainError::UnexpectedError
     })?;
 
