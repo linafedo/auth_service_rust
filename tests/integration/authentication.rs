@@ -1,4 +1,4 @@
-use actix_web::dev::always_ready;
+use std::collections::HashMap;
 use reqwest::{Client, Response};
 use serde_json::Value;
 use crate::lib::helpers::spawn_app;
@@ -12,9 +12,9 @@ const TEST_PASSWORD_KEY: &str = "password";
 
 async fn get_response_for_auth(body: Value, client: Client, address: String) -> Response {
     return client
-        .get(&format!("{}/api/v1/authentication", address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .form(&body)
+        .get(&format!("{}/auth_service/v1/authentication", address))
+        .header("Content-Type", "application/json")
+        .json(&body)
         .send()
         .await
         .expect("Failed to execute request.");
@@ -22,16 +22,16 @@ async fn get_response_for_auth(body: Value, client: Client, address: String) -> 
 
 async fn get_response_for_registration(body: &Value, client: &Client, address: &String) -> Response {
     return client
-        .post(&format!("{}/api/v1/registration", address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .form(&body)
+        .post(&format!("{}/auth_service/v1/registration", address))
+        .header("Content-Type", "application/json")
+        .json(body)
         .send()
         .await
         .expect("Failed to execute request.");
 }
 
 #[tokio::test]
-async fn authentication_returns_a_200_for_valid_form_data() {
+async fn authentication_returns_a_201_for_valid_form_data() {
     // registration
     let test_data = spawn_app().await;
     let client = reqwest::Client::new();
@@ -46,7 +46,7 @@ async fn authentication_returns_a_200_for_valid_form_data() {
 
     // authentication
     let response = get_response_for_auth(body, client, test_data.address).await;
-    assert_eq!(200, response.status().as_u16());
+    assert_eq!(201, response.status().as_u16());
 
     let saved = sqlx::query!("SELECT login FROM users")
         .fetch_one(&test_data.db_pool)

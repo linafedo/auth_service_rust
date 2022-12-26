@@ -45,5 +45,5 @@ pub async fn registration(
                 }
             }
         })?;
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::Ok().content_type("application/json").finish())
 }

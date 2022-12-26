@@ -1,6 +1,5 @@
 use reqwest::{Client, Response};
 use serde_json::Value;
-use auth_service::domain::user::new_user::PasswordData;
 use crate::lib::helpers::spawn_app;
 
 const TEST_LOGIN: &str = "user_login";
@@ -12,9 +11,9 @@ const TEST_LOGIN_WRONG: &str = "a";
 
 async fn get_response(body: Value, client: Client, address: String) -> Response {
     return client
-        .post(&format!("{}/api/v1/registration", address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .form(&body)
+        .post(&format!("{}/auth_service/v1/registration", address))
+        .header("Content-Type", "application/json")
+        .json(&body)
         .send()
         .await
         .expect("Failed to execute request.");
@@ -23,7 +22,7 @@ async fn get_response(body: Value, client: Client, address: String) -> Response 
 #[tokio::test]
 async fn registration_returns_a_200_for_valid_form_data() {
     let test_data = spawn_app().await;
-    let client = reqwest::Client::new();
+    let client = Client::new();
 
     let body = serde_json::json!({
         TEST_LOGIN_KEY: TEST_LOGIN,
@@ -91,7 +90,7 @@ async fn registration_returns_a_409_when_login_is_exist() {
 }
 
 #[tokio::test]
-async fn registration_returns_a_409_when_password_is_wrong() {
+async fn registration_returns_a_400_when_password_is_wrong() {
     let test_data = spawn_app().await;
     let client = reqwest::Client::new();
 
@@ -102,5 +101,5 @@ async fn registration_returns_a_409_when_password_is_wrong() {
 
     let response = get_response(body, client, test_data.address).await;
 
-    assert_eq!(409, response.status().as_u16());
+    assert_eq!(400, response.status().as_u16());
 }

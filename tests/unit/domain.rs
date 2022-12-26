@@ -2,7 +2,7 @@
 mod login_tests {
     use claim::{assert_ok};
     use auth_service::domain::user::error::DomainError;
-    use auth_service::domain::user::new_user::Login;
+    use auth_service::domain::user::user_data::Login;
 
     #[test]
     fn login_length_is_valid() {
@@ -49,9 +49,10 @@ mod login_tests {
 #[cfg(test)]
 mod password_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::domain::user::new_user::{Login, Password, PasswordData};
+    use auth_service::domain::user::user_data::{Login, Password, PasswordData};
     use auth_service::domain::user::error::DomainError;
-    use auth_service::route::dto::auth_data::NewUser;
+    use auth_service::domain::user::new_user::NewUser;
+    use auth_service::password_manager::manager;
 
     #[test]
     fn password_is_correct() {
@@ -78,7 +79,7 @@ mod password_tests {
         let password_str = "123456";
         let password = Password::parse(password_str.to_string()).unwrap();
         let password2 = Password::parse(password_str.to_string()).unwrap();
-        let password_data = PasswordData::generate(password.expose_secret()).unwrap();
+        let password_data = manager::generate(password.expose_secret()).unwrap();
 
         let user = NewUser::new(login, password, password_data);
 
@@ -90,21 +91,24 @@ mod password_tests {
 #[cfg(test)]
 mod password_data_tests {
     use claim::{assert_err, assert_ok};
-    use auth_service::domain::user::new_user::{Login, Password, PasswordData};
+    use secrecy::ExposeSecret;
+    use sqlx::Encode;
+    use auth_service::domain::user::user_data::{Login, Password, PasswordData};
     use auth_service::domain::user::error::DomainError;
-    use auth_service::route::dto::auth_data::NewUser;
+    use auth_service::domain::user::new_user::NewUser;
+    use auth_service::password_manager::manager;
 
     #[test]
     fn return_valid_password_data_fields() {
         let login = Login::parse("Alex".to_string()).unwrap();
         let password = Password::parse( "123456".to_string()).unwrap();
-        let password_data = PasswordData::generate(password.expose_secret()).unwrap();
+        let password_data = manager::generate(password.expose_secret()).unwrap();
         let password_data_clone = password_data.clone();
 
         let user = NewUser::new(login, password, password_data);
 
-        assert_eq!(user.password_data.get_password_hash(), password_data_clone.get_password_hash());
-        assert_eq!(user.password_data.get_salt(), password_data_clone.get_salt());
+        assert_eq!(user.password_data.password_hash, password_data_clone.password_hash);
+        assert_eq!(user.password_data.salt.expose_secret(), password_data_clone.salt.expose_secret());
     }
 
     #[test]
@@ -112,15 +116,15 @@ mod password_data_tests {
         let login = Login::parse("Alex".to_string()).unwrap();
         let password_str = "123456";
         let password = Password::parse( password_str.to_string()).unwrap();
-        let password_data = PasswordData::generate(password.expose_secret()).unwrap();
+        let password_data = manager::generate(password.expose_secret()).unwrap();
         let password_data_clone = password_data.clone();
 
         let user = NewUser::new(login, password, password_data);
 
-        let result = PasswordData::check_password(
+        let result = manager::check_password(
             &password_str,
-            password_data_clone.get_salt(),
-            password_data_clone.get_password_hash()
+            password_data_clone.salt.expose_secret().as_str(),
+            password_data_clone.password_hash.as_str()
         );
         assert_ok!(result);
     }
@@ -130,16 +134,16 @@ mod password_data_tests {
         let login = Login::parse("Alex".to_string()).unwrap();
         let password_str = "123456";
         let password = Password::parse( password_str.to_string()).unwrap();
-        let password_data = PasswordData::generate(password.expose_secret()).unwrap();
+        let password_data = manager::generate(password.expose_secret()).unwrap();
         let password_data_clone = password_data.clone();
 
         let user = NewUser::new(login, password, password_data);
 
         let wrong_password = "111111".to_string();
-        let result = PasswordData::check_password(
+        let result = manager::check_password(
             &wrong_password,
-            password_data_clone.get_salt(),
-            password_data_clone.get_password_hash()
+            password_data_clone.salt.expose_secret().as_str(),
+            password_data_clone.password_hash.as_str()
         );
         assert_eq!( result.err().unwrap(), DomainError::PasswordNotCorrect);
     }

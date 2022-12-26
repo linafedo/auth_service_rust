@@ -17,7 +17,8 @@ use std::fmt::{Debug, Formatter};
 
 pub struct Application {
     server: Server,
-    config: Config
+    config: Config,
+    pub port: u16,
 }
 
 impl Debug for Application {
@@ -40,6 +41,8 @@ impl Application {
         let listener = TcpListener::bind(
             (config.application.host.clone(), config.application.port.clone())
         )?;
+        let port = listener.local_addr().unwrap().port();
+
         let open_api = ServiceApiDoc::openapi();
 
         let server = HttpServer::new(move || {
@@ -69,7 +72,7 @@ impl Application {
         })
             .listen(listener)?
             .run();
-        Ok(Self {server, config})
+        Ok(Self {server, config, port})
     }
 
     #[instrument(

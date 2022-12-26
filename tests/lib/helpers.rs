@@ -1,6 +1,7 @@
 use auth_service::bootstrap::Application;
 use auth_service::configuration::Config;
 use auth_service::telemetry;
+use auth_service::telemetry::Level;
 
 use tokio;
 use uuid::Uuid;
@@ -13,21 +14,11 @@ static TRACING: Lazy<()> = Lazy::new(|| {
     let name = "test".to_string();
     let env_filter = "info".to_string();
 
-    if std::env::var("TEST_LOG").is_ok() {
-        let logger = telemetry::create_logger(
-            name,
-            env_filter,
-            stdout
-        ).expect("Cant create logger");
-        telemetry::init_logger(logger).expect("Can't init logger");
-    } else {
-        let logger = telemetry::create_logger(
-            name,
-            env_filter,
-            sink
-        ).expect("Can't create logger");
-        telemetry::init_logger(logger).expect("Can't init logger");
-    };
+    let (logger, _guard) = telemetry::create_logger(
+        name,
+        Level::Info,
+    ).expect("Cant create logger");
+    telemetry::init_logger(logger).expect("Can't init logger");
 });
 
 pub struct TestData {
@@ -47,9 +38,8 @@ pub async fn spawn_app() -> TestData {
     let database_name = config.database.database_name.clone();
 
     let app = Application::build(config).await.expect("Failed to build application.");
-    let port = app.port();
+    let port = app.port.clone();
     let _ = tokio::spawn(app.run());
-
     let address = format!("http://localhost:{}", port);
     TestData{ address, db_pool: pool, db_name: database_name }
 }
