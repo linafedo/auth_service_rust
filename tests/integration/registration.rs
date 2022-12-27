@@ -34,7 +34,7 @@ async fn registration_returns_a_200_for_valid_form_data() {
     assert_eq!(200, response.status().as_u16());
 
     let saved = sqlx::query!("SELECT login FROM users")
-        .fetch_one(&test_data.db_pool)
+        .fetch_one(test_data.db_pool.as_ref())
         .await
         .expect("Failed to fetch saved user.");
 
@@ -74,7 +74,7 @@ async fn registration_returns_a_409_when_login_is_exist() {
     assert_eq!(200, response.status().as_u16());
 
     let saved = sqlx::query!("SELECT id, login, salt, password_hash FROM users")
-        .fetch_one(&test_data.db_pool)
+        .fetch_one(test_data.db_pool.as_ref())
         .await
         .expect("Failed to fetch saved user.");
 

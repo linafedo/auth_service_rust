@@ -8,6 +8,7 @@ use uuid::Uuid;
 use sqlx::{PgConnection, Connection, PgPool, Executor};
 use once_cell::sync::Lazy;
 use secrecy::ExposeSecret;
+use actix_web::web;
 
 static TRACING: Lazy<()> = Lazy::new(|| {
     let name = "test".to_string();
@@ -21,7 +22,7 @@ static TRACING: Lazy<()> = Lazy::new(|| {
 
 pub struct TestData {
     pub address: String,
-    pub db_pool: PgPool,
+    pub db_pool: web::Data<PgPool>,
     pub db_name: String
 }
 
@@ -42,7 +43,7 @@ pub async fn spawn_app() -> TestData {
     TestData{ address, db_pool: pool, db_name: database_name }
 }
 
-async fn get_pg_pool(config: &Config) -> PgPool {
+async fn get_pg_pool(config: &Config) -> web::Data<PgPool> {
     // Create database
     let mut connection = PgConnection::connect(
         &config.database.connection_string_without_db().expose_secret()
@@ -66,7 +67,9 @@ async fn get_pg_pool(config: &Config) -> PgPool {
         .run(&connection_pool)
         .await
         .expect("Failed to migrate the database");
-    connection_pool
+
+    web::Data::new(connection_pool)
+
 }
 
 

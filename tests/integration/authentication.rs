@@ -48,7 +48,7 @@ async fn authentication_returns_a_201_for_valid_form_data() {
     assert_eq!(201, response.status().as_u16());
 
     let saved = sqlx::query!("SELECT login FROM users")
-        .fetch_one(&test_data.db_pool)
+        .fetch_one(test_data.db_pool.as_ref())
         .await
         .expect("Failed to fetch saved user.");
 
