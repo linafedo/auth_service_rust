@@ -108,33 +108,4 @@ mod password_data_tests {
         assert_eq!(user.password_data.password_hash, password_data_clone.password_hash);
         assert_eq!(user.password_data.salt.expose_secret(), password_data_clone.salt.expose_secret());
     }
-
-    #[test]
-    fn check_password_success() {
-        let password_str = "123456";
-        let password = Password::parse( password_str.to_string()).unwrap();
-        let password_data = manager::generate(password.expose_secret()).unwrap();
-
-        let result = manager::check_password(
-            &password_str,
-            password_data.salt.expose_secret().as_str(),
-            password_data.password_hash.as_str()
-        );
-        assert_ok!(result);
-    }
-
-    #[test]
-    fn check_password_fail() {
-        let password_str = "123456";
-        let password = Password::parse( password_str.to_string()).unwrap();
-        let password_data = manager::generate(password.expose_secret()).unwrap();
-
-        let wrong_password = "111111".to_string();
-        let result = manager::check_password(
-            &wrong_password,
-            password_data.salt.expose_secret().as_str(),
-            password_data.password_hash.as_str()
-        );
-        assert_eq!( result.err().unwrap(), DomainError::PasswordNotCorrect);
-    }
 }
