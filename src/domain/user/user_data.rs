@@ -8,8 +8,8 @@ pub const MAX_PASSWORD_LENGTH: usize = 256;
 pub const MAX_LOGIN_LENGTH: usize = 256;
 pub const MIN_LOGIN_LENGTH: usize = 3;
 
-#[derive(Debug)]
-pub struct Login(Secret<String>);
+#[derive(Debug, Clone)]
+pub struct Login(pub Secret<String>);
 
 impl Login {
     #[instrument(
@@ -42,8 +42,8 @@ impl AsRef<str> for Login {
     }
 }
 
-#[derive(Debug)]
-pub struct Password(Secret<String>);
+#[derive(Debug, Clone)]
+pub struct Password(pub Secret<String>);
 
 impl Password {
     #[instrument(

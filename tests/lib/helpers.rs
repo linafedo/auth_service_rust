@@ -37,7 +37,7 @@ pub async fn spawn_app() -> TestData {
     let database_name = config.database.database_name.clone();
 
     let app = Application::build(config).await.expect("Failed to build application.");
-    let port = app.port.clone();
+    let port = app.bind_port.clone();
     let _ = tokio::spawn(app.run());
     let address = format!("http://localhost:{}", port);
     TestData{ address, db_pool: pool, db_name: database_name }

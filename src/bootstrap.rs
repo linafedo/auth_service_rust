@@ -19,7 +19,7 @@ use anyhow::Context;
 pub struct Application {
     server: Server,
     config: Config,
-    pub port: u16,
+    pub bind_port: u16,
 }
 
 impl Debug for Application {
@@ -48,7 +48,7 @@ impl Application {
             (config.application.host.clone(), config.application.port.clone())
         )
             .context("Bind for tcp listener failed")?;
-        let port = listener.local_addr().unwrap().port();
+        let bind_port = listener.local_addr().unwrap().port();
 
         let open_api = ServiceApiDoc::openapi();
 
@@ -80,7 +80,7 @@ impl Application {
             .listen(listener)
             .context("Bind listener to connection failed")?
             .run();
-        Ok(Self {server, config, port})
+        Ok(Self {server, config, bind_port})
     }
 
     #[instrument(
