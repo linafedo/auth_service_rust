@@ -19,6 +19,7 @@ struct TokenData {
     expiration_timestamp: i64,
 }
 
+#[derive(Debug)]
 pub struct SecretKey {
     value: Secret<[u8; 64]>
 }

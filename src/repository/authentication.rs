@@ -20,11 +20,7 @@ pub async fn check_user(
         user.login.expose_secret(),
     )
         .fetch_one(pg_pool.get_ref())
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to execute query: {:?}", e);
-            e
-        })?;
+        .await?;
     Ok(AuthUser::new(
         result.id,
         Secret::new(result.login),
