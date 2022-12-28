@@ -1,3 +1,3 @@
 pub mod authentication;
 pub mod registration;
-pub mod password;
+pub mod password_data;

@@ -47,7 +47,7 @@ pub struct Password(Secret<String>);
 
 impl Password {
     #[instrument(
-        name = "Parsing password from passed data",
+        name = "Parsing password_data from passed data",
         err
     )]
     pub fn parse(string: Secret<String>) -> Result<Password, DomainError> {

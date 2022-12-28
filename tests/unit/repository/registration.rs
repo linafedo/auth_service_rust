@@ -7,7 +7,7 @@ mod registration_tests {
     use auth_service::domain::user::new_user::NewUser;
     use auth_service::domain::user::user_data::Login;
     use auth_service::domain::user::user_data::Password;
-    use auth_service::repository::password;
+    use auth_service::repository::password_data;
     use crate::lib::helpers::spawn_app;
     use auth_service::repository::registration::insert_user;
     use crate::unit::repository::registration::{TEST_LOGIN, TEST_PASSWORD};
@@ -29,7 +29,7 @@ mod registration_tests {
 
         let login = Login::parse(TEST_LOGIN.to_string()).unwrap();
         let password = Password::parse(TEST_PASSWORD.to_string()).unwrap();
-        let password_data = password::generate(TEST_PASSWORD).unwrap();
+        let password_data = password_data::generate(TEST_PASSWORD).unwrap();
         let new_user = &NewUser::new(login, password, password_data);
 
         // Insert new user in database

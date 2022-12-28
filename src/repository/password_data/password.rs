@@ -5,9 +5,10 @@ use argon2::password_hash::SaltString;
 use rand_core::OsRng;
 use secrecy::{ExposeSecret, Secret};
 use tracing::instrument;
+use anyhow::Context;
 
 #[instrument(
-    name = "Generate password hash for new user",
+    name = "Generate password_data hash for new user",
     err
 )]
 pub fn generate(password: Secret<String>) -> Result<PasswordData, DomainError> {
@@ -32,7 +33,7 @@ pub fn generate(password: Secret<String>) -> Result<PasswordData, DomainError> {
 }
 
 #[instrument(
-    name = "Checking passed password with user password in database",
+    name = "Checking passed password_data with user password_data in database",
     err
 )]
 pub fn check_password(
