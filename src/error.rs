@@ -56,7 +56,7 @@ pub fn error_to_json<B>(res: ServiceResponse<B>) -> actix_web::Result<ErrorHandl
         Ok(hv) => hv,
         Err(_) => {
             return Err(ErrorInternalServerError(
-                "ErrorResponse deserialization failed",
+                "Error of deserialization of content type for error header",
             ));
         }
     };
@@ -74,7 +74,7 @@ pub fn error_to_json<B>(res: ServiceResponse<B>) -> actix_web::Result<ErrorHandl
         Ok(err_res) => res.set_body(Bytes::from(err_res)),
         Err(_) => {
             return Err(ErrorInternalServerError(
-                "ErrorResponse deserialization failed",
+                "Error of setting body to error response",
             ))
         }
     };
