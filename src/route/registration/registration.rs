@@ -4,6 +4,7 @@ use crate::route::dto::error::ResponseError;
 use crate::domain::user::new_user::NewUser;
 use crate::repository::registration::insert_user;
 use actix_web::{HttpResponse, web};
+use actix_web::http::header::ContentType;
 use sqlx::{Error, PgPool};
 use tracing::{instrument};
 use utoipa;
@@ -44,5 +45,7 @@ pub async fn registration(
                 }
             }
         })?;
-    Ok(HttpResponse::Ok().content_type("application/json").finish())
-}
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::json().essence_str())
+        .finish()
+    )}
