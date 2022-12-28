@@ -7,6 +7,7 @@ use crate::configuration::Config;
 use crate::password_manager::manager::check_password;
 
 use actix_web::{HttpResponse, web};
+use secrecy::ExposeSecret;
 use sqlx::{PgPool};
 use tracing::instrument;
 use utoipa;
@@ -24,14 +25,14 @@ use utoipa;
 #[instrument(
     name = "User authentication",
     skip(form, pg_pool),
-    fields(user_login = form.login),
+    fields(user_login = form.login.expose_secret()),
     err
 )]
 pub async fn authentication(
     form: web::Json<AuthData>,
     pg_pool: web::Data<PgPool>
 ) -> Result<HttpResponse, AuthenticationError> {
-    let user = check_user(&form.0, pg_pool)
+    let user = check_user(&form.0.clone(), pg_pool)
         .await
         .map_err(|e| {
         match e {
@@ -40,9 +41,9 @@ pub async fn authentication(
         }
     })?;
     check_password(
-        form.password.as_str(),
-        user.get_salt(),
-        user.password_hash.as_str()
+        form.password.clone(),
+        user.salt.clone(),
+        user.password_hash.clone()
 
     ).map_err(|_| {
         AuthenticationError::PasswordNotCorrect

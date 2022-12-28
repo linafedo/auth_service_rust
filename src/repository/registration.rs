@@ -1,6 +1,7 @@
 use crate::domain::user::new_user::NewUser;
 use sqlx::{Error, PgPool};
 use actix_web::web;
+use secrecy::ExposeSecret;
 use uuid::Uuid;
 
 #[tracing::instrument(
@@ -19,8 +20,8 @@ pub async fn insert_user(
         "#,
         Uuid::new_v4(),
         user.login.as_ref(),
-        user.password_data.expose_salt_secret(),
-        user.password_data.password_hash
+        user.password_data.salt.expose_secret(),
+        user.password_data.password_hash.expose_secret()
     )
         .execute(pg_pool.get_ref())
         .await

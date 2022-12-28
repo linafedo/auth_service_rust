@@ -1,3 +1,4 @@
+use secrecy::{ExposeSecret, Secret};
 use crate::route::dto::auth_data::AuthData;
 use crate::route::registration::error::RegistrationError;
 use crate::domain::user::user_data::{PasswordData, Password, Login};
@@ -23,9 +24,15 @@ impl TryFrom<AuthData> for NewUser {
     type Error = RegistrationError;
 
     fn try_from(value: AuthData) -> Result<Self, Self::Error> {
-        let login = Login::parse(value.login.clone())?;
-        let password = Password::parse(value.password.clone())?;
-        let password_data = generate(password.expose_secret())?;
+        let login = Login::parse(
+            Secret::new(value.login.expose_secret().clone())
+        )?;
+        let password = Password::parse(
+            Secret::new(value.password.expose_secret().clone())
+        )?;
+        let password_data = generate(
+            Secret::new(value.password.expose_secret().clone())
+        )?;
         Ok(Self { login, password, password_data })
     }
 }
