@@ -4,7 +4,7 @@ use crate::route::dto::auth_response::AuthResponse;
 use crate::auth_token::token;
 use crate::repository::authentication::check_user;
 use crate::configuration::Config;
-use crate::password_manager::manager::check_password;
+use crate::repository::password::check_password;
 
 use actix_web::{HttpResponse, web};
 use secrecy::ExposeSecret;

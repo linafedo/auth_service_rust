@@ -52,7 +52,7 @@ mod password_tests {
     use auth_service::domain::user::user_data::{Login, Password};
     use auth_service::domain::user::error::DomainError;
     use auth_service::domain::user::new_user::NewUser;
-    use auth_service::password_manager::manager;
+    use auth_service::repository::password;
 
     #[test]
     fn password_is_correct() {
@@ -79,7 +79,7 @@ mod password_tests {
         let password_str = "123456";
         let password = Password::parse(password_str.to_string()).unwrap();
         let password2 = Password::parse(password_str.to_string()).unwrap();
-        let password_data = manager::generate(password.expose_secret()).unwrap();
+        let password_data = password::generate(password.expose_secret()).unwrap();
 
         let user = NewUser::new(login, password, password_data);
 
@@ -95,13 +95,13 @@ mod password_data_tests {
     use auth_service::domain::user::user_data::{Login, Password};
     use auth_service::domain::user::error::DomainError;
     use auth_service::domain::user::new_user::NewUser;
-    use auth_service::password_manager::manager;
+    use auth_service::repository::password;
 
     #[test]
     fn return_valid_password_data_fields() {
         let login = Login::parse("Alex".to_string()).unwrap();
         let password = Password::parse( "123456".to_string()).unwrap();
-        let password_data = manager::generate(password.expose_secret()).unwrap();
+        let password_data = password::generate(password.expose_secret()).unwrap();
         let password_data_clone = password_data.clone();
         let user = NewUser::new(login, password, password_data);
 

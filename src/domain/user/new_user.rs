@@ -2,7 +2,7 @@ use secrecy::{ExposeSecret, Secret};
 use crate::route::dto::auth_data::AuthData;
 use crate::route::registration::error::RegistrationError;
 use crate::domain::user::user_data::{PasswordData, Password, Login};
-use crate::password_manager::manager::generate;
+use crate::repository::password::generate;
 
 pub struct NewUser {
     pub login: Login,
