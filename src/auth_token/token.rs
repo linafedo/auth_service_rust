@@ -23,6 +23,12 @@ pub struct SecretKey {
     value: Secret<[u8; 64]>
 }
 
+impl SecretKey {
+    fn new(value: Secret<[u8; 64]>) -> Self {
+        SecretKey{ value }
+    }
+}
+
 #[instrument(
     name = "Generating of new token for user",
     err
@@ -89,7 +95,7 @@ fn create_and_save_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     let mut key: [u8; 64] = [0; 64];
     let mut default = OsRng::default();
     default.fill_bytes(&mut key);
-    let secret_key = SecretKey{value: Secret::new(key)};
+    let secret_key = SecretKey::new(Secret::new(key));
 
     let generated_key: Hmac<Sha256> = Hmac::new_from_slice(secret_key.value.expose_secret())
         .map_err(|_| {
@@ -143,7 +149,7 @@ fn handle_result(result: String) -> Result<SecretKey, TokenError> {
     })?;
 
     if decoded_result.len() == 64 {
-        Ok(SecretKey{ value: Secret::new(decoded_result) })
+        Ok(SecretKey::new(Secret::new(decoded_result)))
     } else {
         Err(TokenError::UnexpectedError)
     }
