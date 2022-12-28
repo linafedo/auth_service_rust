@@ -47,9 +47,9 @@ pub fn new_token(user_id: Uuid, duration_in_days: i64) -> Result<String, TokenEr
     let secret_key = read_or_generate_secret_key()?;
 
     let unsigned_token = Token::new(header, claims);
-    let signed_token = unsigned_token.sign_with_key(&secret_key).map_err(|_| {
+    let signed_token = unsigned_token.sign_with_key(&secret_key).map_err(|_|
         TokenError::UnexpectedError
-    })?;
+    )?;
     Ok(signed_token.into())
 }
 
@@ -59,28 +59,29 @@ pub fn new_token(user_id: Uuid, duration_in_days: i64) -> Result<String, TokenEr
     skip(token),
     err
 )]
-pub fn verify_token(token: &str) -> Result<(), TokenError> {
-    match read_secret_from_file() {
-        Ok(secret) => {
-            let generated_key: Hmac<Sha256> = Hmac::new_from_slice(secret.value.expose_secret())
-                .map_err(|_| {
-                TokenError::UnexpectedError
-            })?;
-            VerifyWithKey::verify_with_key(token, &generated_key).map_err(|_| {
-                TokenError::VerifyTokenError
-            })?;
-            Ok(())
-        }
-        Err(_) => Err(TokenError::UnexpectedError)
-    }
+pub fn verify_token(token: Secret<String>) -> Result<(), TokenError> {
+    let secret = read_secret_from_file()
+        .map_err(|_|
+        TokenError::UnexpectedError
+    )?;
+    let generated_key: Hmac<Sha256> = Hmac::new_from_slice(secret.value.expose_secret())
+        .map_err(|_|
+            TokenError::UnexpectedError
+        )?;
+
+    VerifyWithKey::verify_with_key(token.expose_secret().as_str(), &generated_key).map_err(|_|
+        TokenError::VerifyTokenError
+    )?;
+    Ok(())
+
 }
 
 fn read_or_generate_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     if let Ok(secret) = read_secret_from_file() {
         let key = Hmac::new_from_slice(secret.value.expose_secret())
-            .map_err(|_| {
+            .map_err(|_|
             TokenError::UnexpectedError
-        })?;
+        )?;
         Ok(key)
     } else {
         Ok(create_and_save_secret_key()?)
@@ -111,9 +112,9 @@ fn create_and_save_secret_key() -> Result<Hmac<Sha256>, TokenError> {
     err
 )]
 fn save_secret(secret: SecretKey) -> Result<(), TokenError> {
-    let mut file = fs::File::create_new("token_secret.txt").map_err(|_| {
-        return TokenError::UnexpectedError
-    })?;
+    let mut file = fs::File::create_new("token_secret.txt").map_err(|_|
+        TokenError::UnexpectedError
+    )?;
 
     let secret = base64::encode(secret.value.expose_secret());
     file.write(&secret.as_bytes()).map_err(|_| {
