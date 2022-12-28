@@ -24,10 +24,6 @@ pub async fn insert_user(
         user.password_data.password_hash.expose_secret()
     )
         .execute(pg_pool.get_ref())
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to execute query: {:?}", e);
-            e
-        })?;
+        .await?;
     Ok(())
 }
