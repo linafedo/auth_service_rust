@@ -39,15 +39,20 @@ pub struct Authentication {
 
 impl Config {
     pub fn load() -> Result<Config, ConfigError> {
-        let base_path = current_dir().map_err(|_| {
-            ConfigError::Message("Filled to getting the current directory".to_string())
-        })?;
+        let base_path = current_dir().map_err(|_|
+            ConfigError::Message("Get current directory failed".to_string())
+        )?;
         let config_dir = base_path.join("config");
         let config = config::Config::builder()
             .add_source(config::File::from(config_dir.join("configuration.yaml")))
-            .build()?;
+            .build()
+            .map_err(|_|
+                ConfigError::Message("Build config file failed".to_string())
+        )?;
 
-        config.try_deserialize::<Config>()
+        config.try_deserialize::<Config>().map_err(|_|
+            ConfigError::Message("Deserialize config file to config struct failed".to_string())
+        )
     }
 }
 

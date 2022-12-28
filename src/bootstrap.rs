@@ -14,6 +14,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use utoipa::OpenApi;
 use tracing::instrument;
 use std::fmt::{Debug, Formatter};
+use anyhow::Context;
 
 pub struct Application {
     server: Server,
@@ -31,6 +32,11 @@ impl Debug for Application {
 }
 
 impl Application {
+    #[instrument(
+        name = "App build",
+        skip(config),
+        err
+    )]
     pub async fn build(config: Config) -> Result<Self, anyhow::Error> {
         let pg_pool = PgPool::connect(
             &config.database.connection_string().expose_secret()
@@ -40,7 +46,8 @@ impl Application {
 
         let listener = TcpListener::bind(
             (config.application.host.clone(), config.application.port.clone())
-        )?;
+        )
+            .context("Bind for tcp listener failed")?;
         let port = listener.local_addr().unwrap().port();
 
         let open_api = ServiceApiDoc::openapi();
@@ -70,7 +77,8 @@ impl Application {
                 )
                 .app_data(connection.clone())
         })
-            .listen(listener)?
+            .listen(listener)
+            .context("Bind listener to connection failed")?
             .run();
         Ok(Self {server, config, port})
     }
