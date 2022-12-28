@@ -56,7 +56,6 @@ pub fn new_token(user_id: Uuid, duration_in_days: i64) -> Result<String, TokenEr
 
 #[instrument(
     name = "Verifying of token",
-    skip(token),
     err
 )]
 pub fn verify_token(token: Secret<String>) -> Result<(), TokenError> {
@@ -108,7 +107,6 @@ fn create_and_save_secret_key() -> Result<Hmac<Sha256>, TokenError> {
 
 #[instrument(
     name = "Save secret to file",
-    skip(secret),
     err
 )]
 fn save_secret(secret: SecretKey) -> Result<(), TokenError> {
@@ -118,7 +116,7 @@ fn save_secret(secret: SecretKey) -> Result<(), TokenError> {
 
     let secret = base64::encode(secret.value.expose_secret());
     file.write(&secret.as_bytes()).map_err(|_| {
-        return TokenError::UnexpectedError
+        TokenError::UnexpectedError
     })?;
     Ok(())
 }
@@ -131,18 +129,17 @@ fn read_secret_from_file() -> Result<SecretKey, TokenError> {
     let result = fs::read_to_string("token_secret.txt").map_err(|_| {
         TokenError::UnexpectedError
     })?;
-    handle_result(result)
+    decode_of_secret(Secret::new(result))
 }
 
 #[instrument(
     name = "Decoding of secret",
-    skip(result),
     err
 )]
-fn handle_result(result: String) -> Result<SecretKey, TokenError> {
+fn decode_of_secret(result: Secret<String>) -> Result<SecretKey, TokenError> {
     let mut decoded_result: [u8; 64] = [0; 64];
     base64::decode_config_slice(
-        &result,
+        &result.expose_secret(),
         base64::STANDARD,
         &mut decoded_result
     ).map_err( |_| {
