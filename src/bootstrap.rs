@@ -74,7 +74,7 @@ impl Application {
                         )
                         .route(
                             "/authentication",
-                            web::get().to(authentication),
+                            web::post().to(authentication),
                         )
                 )
                 .app_data(connection.clone())

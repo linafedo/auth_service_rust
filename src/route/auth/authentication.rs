@@ -14,7 +14,7 @@ use utoipa;
 
 /// Auth user with login and password
 #[utoipa::path(
-    get,
+    post,
     path = "/auth_service/v1/authentication",
     request_body = AuthData,
     responses(

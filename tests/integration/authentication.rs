@@ -11,7 +11,7 @@ const TEST_PASSWORD_KEY: &str = "password";
 
 async fn get_response_for_auth(body: Value, client: Client, address: String) -> Response {
     return client
-        .get(&format!("{}/auth_service/v1/authentication", address))
+        .post(&format!("{}/auth_service/v1/authentication", address))
         .header("Content-Type", "application/json")
         .json(&body)
         .send()
