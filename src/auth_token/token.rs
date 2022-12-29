@@ -35,11 +35,11 @@ impl SecretKey {
     name = "Generating of new token for user",
     err
 )]
-pub fn new_token(user_id: Uuid, duration_in_days: i64) -> Result<String, TokenError> {
+pub fn new_token(user_id: Uuid, duration_in_sec: i64) -> Result<String, TokenError> {
     // header
     let header: Header = Default::default();
     // claims
-    let expiration_time = chrono::Utc::now() + Duration::days(duration_in_days);
+    let expiration_time = chrono::Utc::now() + Duration::seconds(duration_in_sec);
 
     let claims = TokenData {
         user_id: user_id.to_string(),

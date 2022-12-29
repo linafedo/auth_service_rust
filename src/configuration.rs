@@ -34,7 +34,7 @@ pub struct Log {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Authentication {
-    pub token_duration_in_days: i64
+    pub token_duration_in_sec: i64
 }
 
 impl Config {

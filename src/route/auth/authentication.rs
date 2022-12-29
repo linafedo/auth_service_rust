@@ -54,7 +54,7 @@ pub async fn authentication(
 
     let token = token::new_token(
         user.id,
-        config.authentication.token_duration_in_days
+        config.authentication.token_duration_in_sec
     )
         .map_err(|_|
             AuthenticationError::UnexpectedError
