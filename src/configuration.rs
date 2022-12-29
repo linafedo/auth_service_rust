@@ -32,7 +32,7 @@ pub struct Log {
     pub level: Option<Level>
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Copy)]
 pub struct Authentication {
     pub token_duration_in_sec: i64
 }

@@ -3,7 +3,7 @@ use crate::route::dto::auth_data::AuthData;
 use crate::route::dto::auth_response::AuthResponse;
 use crate::auth_token::token;
 use crate::repository::authentication::check_user;
-use crate::configuration::Config;
+use crate::configuration::{Config, Authentication};
 use crate::repository::password_data::password::check_password;
 
 use actix_web::{HttpResponse, web};
@@ -29,7 +29,8 @@ use utoipa;
 )]
 pub async fn authentication(
     form: web::Json<AuthData>,
-    pg_pool: web::Data<PgPool>
+    pg_pool: web::Data<PgPool>,
+    data: web::Data<Authentication>
 ) -> Result<HttpResponse, AuthenticationError> {
     let user = check_user(&form.0.clone(), pg_pool)
         .await
@@ -48,13 +49,9 @@ pub async fn authentication(
         AuthenticationError::PasswordNotCorrect
     })?;
 
-    let config = Config::load().map_err(|_|
-        AuthenticationError::UnexpectedError
-    )?;
-
     let token = token::new_token(
         user.id,
-        config.authentication.token_duration_in_sec
+        data.token_duration_in_sec
     )
         .map_err(|_|
             AuthenticationError::UnexpectedError

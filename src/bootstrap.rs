@@ -4,7 +4,7 @@ use crate::route::registration::registration::registration;
 use crate::api_documentation::ServiceApiDoc;
 use crate::error::error_to_json_handler;
 
-use actix_web::dev::Server;
+use actix_web::dev::{HttpServiceFactory, Server};
 use actix_web::{HttpServer, App, web};
 use std::net::TcpListener;
 use secrecy::ExposeSecret;
@@ -43,6 +43,7 @@ impl Application {
         )
             .await?;
         let connection = web::Data::new(pg_pool);
+        let auth_data = web::Data::new(config.authentication);
 
         let listener = TcpListener::bind(
             (config.application.host.clone(), config.application.port.clone())
@@ -66,6 +67,7 @@ impl Application {
                 )
                 .service(
                     web::scope("auth_service/v1")
+                        .app_data(auth_data.clone())
                         .route(
                             "/registration",
                             web::post().to(registration),
