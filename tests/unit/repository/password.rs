@@ -4,7 +4,7 @@ mod password_manager_tests {
     use auth_service::domain::user::user_data::Password;
     use secrecy::{ExposeSecret, Secret};
     use claim::{assert_ok, assert_some};
-    use auth_service::domain::user::error::DomainError;
+    use auth_service::repository::password_data::error::Error;
 
     #[test]
     fn check_password_success() {
@@ -31,7 +31,8 @@ mod password_manager_tests {
             password_data.salt.clone(),
             password_data.password_hash.clone()
         );
-        assert_eq!(result.err().unwrap(), DomainError::PasswordNotCorrect);
+        assert!(matches!(result.err().unwrap(), Error::PasswordNotCorrect));
+
     }
 
     #[test]

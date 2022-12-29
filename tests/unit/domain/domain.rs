@@ -2,7 +2,7 @@
 mod login_tests {
     use claim::{assert_ok};
     use secrecy::Secret;
-    use auth_service::domain::user::error::DomainError;
+    use auth_service::domain::user::error::Error;
     use auth_service::domain::user::user_data::Login;
 
     #[test]
@@ -16,7 +16,7 @@ mod login_tests {
         let items = ["a".repeat(258), "aa".to_string(), "a".to_string()];
         for i in items {
             let result = Login::parse(Secret::new(i));
-            assert_eq!( result.err().unwrap(), DomainError::LoginLengthIsWrong);
+            assert_eq!( result.err().unwrap(), Error::LoginLengthIsWrong);
         }
     }
 
@@ -33,7 +33,7 @@ mod login_tests {
         ];
         for i in items {
             let result = Login::parse(Secret::new(i.to_string()));
-            assert_eq!( result.err().unwrap(), DomainError::LoginIsNotCorrect);
+            assert_eq!( result.err().unwrap(), Error::LoginIsNotCorrect);
         }
     }
 
@@ -42,7 +42,7 @@ mod login_tests {
         let items = ["", " "];
         for i in items {
             let result = Login::parse(Secret::new(i.to_string()));
-            assert_eq!( result.err().unwrap(), DomainError::LoginIsEmpty);
+            assert_eq!( result.err().unwrap(), Error::LoginLengthIsWrong);
         }
     }
 }
@@ -53,7 +53,7 @@ mod password_tests {
     use claim::assert_ok;
     use secrecy::{ExposeSecret, Secret};
     use auth_service::domain::user::user_data::{Login, Password};
-    use auth_service::domain::user::error::DomainError;
+    use auth_service::domain::user::error::Error;
     use auth_service::domain::user::new_user::NewUser;
     use auth_service::repository::password_data::password::generate;
 
@@ -72,7 +72,7 @@ mod password_tests {
         ];
         for i in items {
             let result = Password::parse(Secret::new(i));
-            assert_eq!( result.err().unwrap(), DomainError::PasswordNotCorrect);
+            assert_eq!( result.err().unwrap(), Error::PasswordNotCorrect);
         }
     }
 
@@ -107,7 +107,6 @@ mod password_data_tests {
     use claim::assert_ok;
     use secrecy::{ExposeSecret, Secret};
     use auth_service::domain::user::user_data::{Login, Password};
-    use auth_service::domain::user::error::DomainError;
     use auth_service::domain::user::new_user::NewUser;
     use auth_service::repository::password_data::password::generate;
 
