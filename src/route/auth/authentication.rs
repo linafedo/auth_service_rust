@@ -25,7 +25,6 @@ use utoipa;
 #[instrument(
     name = "User authentication",
     skip(form, pg_pool),
-    fields(user_login = form.login.expose_secret()),
     err
 )]
 pub async fn authentication(
