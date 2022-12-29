@@ -1,11 +1,10 @@
 use std::fmt::Debug;
+use anyhow::Context;
 
 #[derive(thiserror::Error, Debug)]
 pub enum TokenError {
     #[error("Verify token Error")]
     VerifyTokenError,
-    #[error("File with secret not found")]
-    FileWithSecretNotFound,
-    #[error("Something went wrong")]
-    UnexpectedError,
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
 }
