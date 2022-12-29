@@ -1,4 +1,4 @@
-use crate::domain::user::error::DomainError;
+use crate::domain::user::error::Error;
 use secrecy::{Secret, ExposeSecret};
 use unicode_segmentation::UnicodeSegmentation;
 use tracing::instrument;
@@ -16,21 +16,21 @@ impl Login {
         name = "Parsing user login from passed data",
         err
     )]
-    pub fn parse(string: Secret<String>) -> Result<Login, DomainError> {
+    pub fn parse(string: Secret<String>) -> Result<Login, Error> {
         let forbidden_characters = ['/', '(', ')', '"', '<', '>', '\\', '{', '}', '-'];
         let contains_forbidden_characters = string.expose_secret()
             .chars()
             .any(|c| forbidden_characters.contains(&c));
 
         if string.expose_secret().trim().is_empty() {
-            return Err(DomainError::LoginIsEmpty)
+            return Err(Error::LoginLengthIsWrong)
         }
         if string.expose_secret().graphemes(true).count() > MAX_LOGIN_LENGTH
             || string.expose_secret().graphemes(true).count() < MIN_LOGIN_LENGTH {
-            return Err(DomainError::LoginLengthIsWrong)
+            return Err(Error::LoginLengthIsWrong)
         }
         if contains_forbidden_characters {
-            return Err(DomainError::LoginIsNotCorrect)
+            return Err(Error::LoginIsNotCorrect)
         }
         Ok(Login { 0: string })
     }
@@ -50,11 +50,11 @@ impl Password {
         name = "Parsing password_data from passed data",
         err
     )]
-    pub fn parse(string: Secret<String>) -> Result<Password, DomainError> {
+    pub fn parse(string: Secret<String>) -> Result<Password, Error> {
         if string.expose_secret().trim().is_empty()
             || string.expose_secret().graphemes(true).count() < MIN_PASSWORD_LENGTH
             || string.expose_secret().graphemes(true).count() > MAX_PASSWORD_LENGTH {
-            return Err(DomainError::PasswordNotCorrect)
+            return Err(Error::PasswordNotCorrect)
         }
         Ok(Password { 0: Secret::new(string.expose_secret().clone()) })
     }

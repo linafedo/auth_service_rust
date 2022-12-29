@@ -9,6 +9,7 @@ use sqlx::{Error, PgPool};
 use tracing::{instrument};
 use utoipa;
 use serde_json::json;
+use anyhow::Context;
 
 #[utoipa::path(
     post,

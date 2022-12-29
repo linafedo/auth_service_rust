@@ -1,4 +1,4 @@
-use crate::domain::user::error::DomainError;
+use crate::repository::password_data::error::Error;
 use crate::domain::user::user_data::PasswordData;
 use argon2::{Argon2, PasswordHasher};
 use argon2::password_hash::SaltString;
@@ -11,16 +11,18 @@ use anyhow::Context;
     name = "Generate password_data hash for new user",
     err
 )]
-pub fn generate(password: Secret<String>) -> Result<PasswordData, DomainError> {
+pub fn generate(password: Secret<String>) -> Result<PasswordData, Error> {
     let argon = Argon2::default();
     let salt = SaltString::generate(&mut OsRng);
 
     let hash_password = argon.hash_password(
         password.expose_secret().as_bytes(),
-        salt.as_ref()
-    ).map_err(|_| {
-        DomainError::UnexpectedError
-    })?;
+        salt.as_ref(),
+    )
+        .map_err(|_|
+            Error::UnexpectedError(anyhow::Error::msg(
+                "Output for hash password is empty during generate new password")
+            ))?;
 
     if let Some(output) = hash_password.hash {
         Ok(PasswordData {
@@ -28,7 +30,11 @@ pub fn generate(password: Secret<String>) -> Result<PasswordData, DomainError> {
             salt: Secret::new(salt.as_str().to_string()),
         })
     } else {
-        return Err(DomainError::UnexpectedError)
+        return Err(
+            Error::UnexpectedError(anyhow::Error::msg(
+                    "Output for hash password is empty during generate new password")
+            )
+        )
     }
 }
 
@@ -39,22 +45,29 @@ pub fn generate(password: Secret<String>) -> Result<PasswordData, DomainError> {
 pub fn check_password(
     password: Secret<String>,
     salt: Secret<String>,
-    password_hash: Secret<String>) -> Result<(), DomainError> {
+    password_hash: Secret<String>) -> Result<(), Error> {
     let argon = Argon2::default();
     let hash_password = argon.hash_password(
         password.expose_secret().as_bytes(),
         salt.expose_secret()
-    ).map_err(|_| {
-        DomainError::UnexpectedError
-    })?;
-
+    )
+        .map_err(|_|
+            Error::UnexpectedError(anyhow::Error::msg(
+                "Generate hash password for check passed password failed")
+            ))?;
     return if let Some(output) = hash_password.hash {
         if base64::encode(output.as_bytes()) == password_hash.expose_secret().clone() {
             Ok(())
         } else {
-            Err(DomainError::PasswordNotCorrect)
+            Err(Error::PasswordNotCorrect)
         }
     } else {
-        Err(DomainError::UnexpectedError)
+        Err(
+            Error::UnexpectedError(
+                anyhow::Error::msg(
+                    "Output for hash password is empty during check passed password"
+                )
+            )
+        )
     }
 }
