@@ -24,9 +24,13 @@ impl RegistrationError {
 
     pub fn user_exist_error_example() -> dto::error::ResponseError {
         dto::error::ResponseError::from_error(
-            RegistrationError::DataIsNotCorrect(
-                anyhow::Error::msg("User already exists")
-            )
+            RegistrationError::AlreadyExist
+        )
+    }
+
+    pub fn unexpected_error_example() -> dto::error::ResponseError {
+        dto::error::ResponseError::from_error(
+            RegistrationError::UnexpectedError
         )
     }
 }

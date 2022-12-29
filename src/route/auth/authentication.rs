@@ -12,15 +12,18 @@ use sqlx::{PgPool};
 use tracing::instrument;
 use utoipa;
 
+/// Auth user with login and password
 #[utoipa::path(
     get,
-    path = "/api/v1/authentication",
+    path = "/auth_service/v1/authentication",
     request_body = AuthData,
     responses(
         (status = 200, body = AuthResponse),
-        (status = 409, description = "Password is not correct"),
-        (status = 400, description = "User not exist")
+        (status = 409, body = ResponseError, example = json!(AuthenticationError::password_not_correct_error_example())),
+        (status = 400, body = ResponseError, example = json!(AuthenticationError::user_not_exist_error_example())),
+        (status = 500, body = ResponseError, example = json!(AuthenticationError::unexpected_error_example()))
     ),
+    tag = "Auth API",
 )]
 #[instrument(
     name = "User authentication",

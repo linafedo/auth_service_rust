@@ -11,16 +11,18 @@ use utoipa;
 use serde_json::json;
 use anyhow::Context;
 
+/// Registration new user
 #[utoipa::path(
     post,
-    path = "/api/v1/registration",
+    path = "/auth_service/v1/registration",
     request_body = AuthData,
     responses(
         (status = 200),
         (status = 409, body = ResponseError, example = json!(RegistrationError::password_not_correct_error_example())),
         (status = 400, body = ResponseError, example = json!(RegistrationError::user_exist_error_example())),
-        (status = 500, body = ResponseError, example = json!(ResponseError::internal_error_example()))
+        (status = 500, body = ResponseError, example = json!(RegistrationError::unexpected_error_example()))
     ),
+    tag = "Auth API",
 )]
 #[instrument(
     name = "Adding a new user",
