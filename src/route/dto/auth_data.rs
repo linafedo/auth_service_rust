@@ -10,8 +10,10 @@ use serde::{Serialize, Deserialize, Serializer};
 #[derive(Deserialize, Serialize, ToSchema, Clone, IntoParams)]
 #[schema(example = json!(AuthData::example()))]
 pub struct AuthData {
+    #[schema(value_type = String)]
     #[serde(serialize_with = "serialize_secret")]
     pub login: Secret<String>,
+    #[schema(value_type = String)]
     #[serde(serialize_with = "serialize_secret")]
     pub password: Secret<String>,
 }
